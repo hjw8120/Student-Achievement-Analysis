@@ -16,10 +16,71 @@ library(infer)
 ### Load data
 ```{r load-data, message=FALSE}
 students <- read_csv("/cloud/project/proposal/student-mat.csv")
-students
 ```
 ## Section 1. Introduction
 
 ## Section 2. Data analysis plan
+
+```{r}
+students <- students %>%
+  mutate(first_gen = case_when(
+    Medu < 4 ~ "Yes",
+    Fedu < 4 ~ "Yes",
+    Medu == 4 ~ "No",
+    Fedu == 4 ~ "No"))
+```
+
+```{r avg-score}
+students <- students %>%
+  mutate(avg_score = ((G1 + G2 + G3)/3))
+```
+
+```{r backward-selection}
+full_model <- lm(avg_score ~ school + 
+                  sex + age + address + 
+                  famsize + Pstatus + 
+                   Mjob + Fjob + 
+                  reason + guardian + traveltime +
+                  studytime + failures + 
+                  paid + activities +
+                  nursery + higher + internet +
+                  romantic + famrel + freetime +
+                  goout + Dalc + Walc +
+                  health + absences + first_gen, data = students)
+final_model <- step(full_model, direction = "backward")
+tidy(final_model) %>% 
+  select(term, estimate)
+```
+
+
+
+```{r hist}
+students %>% 
+  group_by(first_gen) %>%
+  summarise(median = median(studytime), IQR = IQR(studytime))
+```
+
+```{r hist-studytime}
+ggplot (students, mapping = aes(x = first_gen)) +
+  geom_bar() + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + facet_grid ( ~studytime) + theme_light()
+```
+
+```{r hist-goout}
+ggplot(data = students, mapping = aes(x = goout, y = avg_score, fill = first_gen)) +
+  geom_bar(stat = "Identity", position = position_dodge()) + 
+  labs(title = "Average Score vs. Going Out", subtitle = "in First and non-First Generation Students", x = "Going Out", y = "Average Score", fill = "First Generation")
+```
+
+study time 
+go out 
+family size 
+mother's job 
+
+```{r hist2}
+ggplot(data = students, mapping = aes(x = studytime, y = avg_score, fill = first_gen)) +
+  geom_bar(stat = "Identity", position = position_dodge()) + 
+  labs(title = "Average Score vs. Study Time", subtitle = "in First and non-First Generation Students", x = "Study Time", y = "Average Score", fill = "First Generation")
+```
 
 ## Section 3. Data

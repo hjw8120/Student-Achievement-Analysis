@@ -28,7 +28,15 @@ students <- students %>%
     Fedu < 4 ~ "Yes",
     Medu == 4 ~ "No",
     Fedu == 4 ~ "No"))
+students %>%
+  count(first_gen)
 ```
+
+    ## # A tibble: 2 x 2
+    ##   first_gen     n
+    ##   <chr>     <int>
+    ## 1 No           70
+    ## 2 Yes         325
 
 ``` r
 students <- students %>%
@@ -585,12 +593,77 @@ students %>%
     ## 2 Yes            2     1
 
 ``` r
-ggplot (students, mapping = aes(x = first_gen)) +
-  geom_bar() + 
-  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + facet_grid ( ~studytime) + theme_light()
+students %>%
+  group_by(first_gen) %>%
+  summarise (med=median(avg_score),
+             IQR = IQR(avg_score))
+```
+
+    ## # A tibble: 2 x 3
+    ##   first_gen   med   IQR
+    ##   <chr>     <dbl> <dbl>
+    ## 1 No         12.2  4.67
+    ## 2 Yes        10.3  5
+
+``` r
+students %>%
+  count(sex)
+```
+
+    ## # A tibble: 2 x 2
+    ##   sex       n
+    ##   <chr> <int>
+    ## 1 F       208
+    ## 2 M       187
+
+``` r
+ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
+  geom_boxplot() + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
+```
+
+![](proposal_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+ggplot (students, mapping = aes(x = sex, y = avg_score)) +
+  geom_boxplot() + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
+```
+
+![](proposal_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+ggplot (data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(studytime)), position = "fill") + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "proportion of different study time", fill = "Study Time") 
 ```
 
 ![](proposal_files/figure-gfm/hist-studytime-1.png)<!-- -->
+
+``` r
+students
+```
+
+    ## # A tibble: 395 x 35
+    ##    school sex     age address famsize Pstatus  Medu  Fedu Mjob  Fjob 
+    ##    <chr>  <chr> <dbl> <chr>   <chr>   <chr>   <dbl> <dbl> <chr> <chr>
+    ##  1 GP     F        18 U       GT3     A           4     4 at_h… teac…
+    ##  2 GP     F        17 U       GT3     T           1     1 at_h… other
+    ##  3 GP     F        15 U       LE3     T           1     1 at_h… other
+    ##  4 GP     F        15 U       GT3     T           4     2 heal… serv…
+    ##  5 GP     F        16 U       GT3     T           3     3 other other
+    ##  6 GP     M        16 U       LE3     T           4     3 serv… other
+    ##  7 GP     M        16 U       LE3     T           2     2 other other
+    ##  8 GP     F        17 U       GT3     A           4     4 other teac…
+    ##  9 GP     M        15 U       LE3     A           3     2 serv… other
+    ## 10 GP     M        15 U       GT3     T           3     4 other other
+    ## # … with 385 more rows, and 25 more variables: reason <chr>,
+    ## #   guardian <chr>, traveltime <dbl>, studytime <dbl>, failures <dbl>,
+    ## #   schoolsup <chr>, famsup <chr>, paid <chr>, activities <chr>,
+    ## #   nursery <chr>, higher <chr>, internet <chr>, romantic <chr>,
+    ## #   famrel <dbl>, freetime <dbl>, goout <dbl>, Dalc <dbl>, Walc <dbl>,
+    ## #   health <dbl>, absences <dbl>, G1 <dbl>, G2 <dbl>, G3 <dbl>,
+    ## #   first_gen <chr>, avg_score <dbl>
 
 ``` r
 ggplot(data = students, mapping = aes(x = goout, y = avg_score, fill = first_gen)) +

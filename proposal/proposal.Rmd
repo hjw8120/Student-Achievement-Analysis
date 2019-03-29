@@ -28,6 +28,8 @@ students <- students %>%
     Fedu < 4 ~ "Yes",
     Medu == 4 ~ "No",
     Fedu == 4 ~ "No"))
+students %>%
+  count(first_gen)
 ```
 
 ```{r avg-score}
@@ -53,17 +55,44 @@ tidy(final_model) %>%
 ```
 
 
-
 ```{r hist}
 students %>% 
   group_by(first_gen) %>%
   summarise(median = median(studytime), IQR = IQR(studytime))
 ```
+```{r}
+students %>%
+  group_by(first_gen) %>%
+  summarise (med=median(avg_score),
+             IQR = IQR(avg_score))
+```
+
+```{r}
+students %>%
+  count(sex)
+```
+
+
+```{r}
+ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
+  geom_boxplot() + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
+```
+
+```{r}
+ggplot (students, mapping = aes(x = sex, y = avg_score)) +
+  geom_boxplot() + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
+```
+
 
 ```{r hist-studytime}
-ggplot (students, mapping = aes(x = first_gen)) +
-  geom_bar() + 
-  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + facet_grid ( ~studytime) + theme_light()
+ggplot (data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(studytime)), position = "fill") + 
+  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "proportion of different study time", fill = "Study Time") 
+```
+```{r}
+students
 ```
 
 ```{r hist-goout}
@@ -81,6 +110,9 @@ mother's job
 ggplot(data = students, mapping = aes(x = studytime, y = avg_score, fill = first_gen)) +
   geom_bar(stat = "Identity", position = position_dodge()) + 
   labs(title = "Average Score vs. Study Time", subtitle = "in First and non-First Generation Students", x = "Study Time", y = "Average Score", fill = "First Generation")
+```
+```{r}
+
 ```
 
 ## Section 3. Data

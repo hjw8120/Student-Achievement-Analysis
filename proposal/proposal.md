@@ -1,4 +1,4 @@
-PROJECT TITLE
+MATH IS FUN IF YOU ANALYZE IT RIGHT\!
 ================
 LAW students
 Mar. 29th
@@ -14,12 +14,56 @@ library(infer)
 ### Load data
 
 ``` r
-students <- read_csv("/cloud/project/proposal/student-mat.csv")
+students <- read_csv("/cloud/project/data/student-mat.csv")
 ```
 
 ## Section 1. Introduction
 
+For this project, we want to examine which characteristics are the best
+predictors of high school students’ academic achievement. Specifically,
+we are studying the effects of demographics, social, school, and family
+related features on Portuguese secondary students’ final Mathematics
+grades.
+
+The data shows student achievement in secondary education of two
+Portuguese schools, and was collected in November 2014 using school
+reports and questionnaires. The dataset comes from the UCI Machine
+Learning Repository, with a total of 395 observations and 33 variables.
+We chose the Mathematics data set, which measures student achievement in
+the subject of Mathematics.
+
+The variables in the data set are: school, sex, age, address, famsize,
+Pstatus, Medu, Fedu, Mjob (mother’s job), Fjob (father’s job), reason
+(reason to choose this school), guardian, traveltime(home to school
+travel time), studytime, failures (number of past class failures),
+schoolsup (education), famsup, paid, activities, nursery, higher,
+internet, romantic, famrel, freetime, goout, Dalc, Walc, health,
+absences, G1 (first period grade), G2 (second period grade), G3 (final
+grade)
+
+From this data, we have formulated a general research question: Using
+this data from the UCI Machine Learning Repository, what are the best
+predictors of high Mathematics achievement in first generation v.
+non-first generation secondary school students in Portuguese schools?
+
 ## Section 2. Data analysis plan
+
+Since we want to study the effect of certain variables on student
+achievement, the outcome (response) variable will be the student’s
+overall average grade. For the outcome variable, we created a new
+numeric variable called `avg_score` that takes the average of G1, G2,
+and G3, which corresponds to the term1, term2, and final grades of the
+students. The predictor (explanatory) variables will be the four
+variables with the highest difference in mean/median/proportion between
+first and non-first generation students. We will choose these variables
+out of the 13 selected variables from the optimal multiple linear
+regression model we found by conducting a model selection of the full
+model.
+
+``` r
+students <- students %>%
+  mutate(avg_score = ((G1 + G2 + G3)/3))
+```
 
 ``` r
 students <- students %>%
@@ -37,11 +81,6 @@ students %>%
     ##   <chr>     <int>
     ## 1 No           70
     ## 2 Yes         325
-
-``` r
-students <- students %>%
-  mutate(avg_score = ((G1 + G2 + G3)/3))
-```
 
 ``` r
 full_model <- lm(avg_score ~ school + 
@@ -580,17 +619,84 @@ tidy(final_model) %>%
     ## 12 health        -0.259 
     ## 13 first_genYes  -0.854
 
+We will be comparing achievement levels between first generation and
+non-first generation Portuguese students. We classify non-first
+generation students as those who have one or more parent with higher
+education. To do this, we created a `first_gen` variable that labels
+first generation students (those with both mothers and fathers who have
+never attended higher education) as “yes” and non-first generation
+students (those with at least one parent who received higher education )
+as “no.” There are 325 observations for first generation students and 70
+observations for non-first generation students.
+
+We used model selection to select 13 variables as the most influential
+on average student grade. We conducted backwards selection on the full
+model to create a multiple linear regression model with these 13
+variables. avg\_score-hat = 10.66 + 1.33 \* sexM + 0.54 \* famsizeLE3 +
+1.85 \* Mjobhealth - 0.06 \* Mjobother + 1.26 \* Mjobservices - 0.05 \*
+Mjobteacher + 0.53 \* studytime - 1.56 \* failures + 1.31 \* higheryes -
+0.45 \* goout - 0.26 \* health - 0.85 \* first\_genYes
+
+Linear regression modelling will be useful in helping us determine which
+variables are most influential on student achievement, as well as give
+us the slope and intercepts so we can quantify how influential each
+variable is. This will help us choose the most influential variables on
+average score. Then, we will use hypothesis testing to see if there are
+statistically significant differences in means, medians, or proportions
+in variables across first and non-first generation students. We will
+take the top variables with the most significant differences to use as
+our predictor variables. Then we will create correlation models using
+linear regression to analyze the effect of differences in variables on
+student achievement.
+
+Bootstrapping will allow us to create confidence intervals that
+represent how confident we are that our bootstrap distributions capture
+the true population parameter. Sampling distributions will allow us to
+find sample statistics that represent the population statistics. These
+two methods will allow us to determine to what extent we can generalize
+our findings to Portuguese students.
+
+For our hypothesis tests, we would like to get p-values less than our
+significance level of alpha = 0.05. This would allow us to conclude
+there is a statistically significant difference in certain variables
+between first generation and non-first generation students. After
+determining which variables are statistically significant from each
+other across the two groups, we would want to see those variables’
+effects on average score. This would be shown through a linear
+regression model with different slopes and intercepts for the two
+groups.
+
+We started our preliminary data analysis by creating a distribution for
+average score for first generation and non-first generation students.
+Because the distributions are slightly skewed, we decided to use median
+and IQR as metrics of center and spread.
+
 ``` r
-students %>% 
-  group_by(first_gen) %>%
-  summarise(median = median(studytime), IQR = IQR(studytime))
+ggplot(data = students) +
+  geom_histogram(mapping = aes(x = avg_score), binwidth = 3) +
+  facet_wrap(~ first_gen) +
+  labs(title = "Distributions of Average Scores for First and Non-First Generation Students",
+          x = "Average Score", y = "Frequency")
 ```
 
-    ## # A tibble: 2 x 3
-    ##   first_gen median   IQR
-    ##   <chr>      <dbl> <dbl>
-    ## 1 No             2     1
-    ## 2 Yes            2     1
+![](proposal_files/figure-gfm/dist-firstgen-1.png)<!-- -->
+
+We compared first and non-first generation students’ average scores in a
+boxplot diagram. The boxplot shows that, in this sample, the non-first
+generation students’ median average score is 12.2, which is slightly
+higher than the first generation students’ median average score of 10.3.
+There are no outliers in either groups.
+
+``` r
+ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
+  geom_boxplot() + 
+  labs(title = "Average Score vs. First and Non-First Generation Students", 
+       x = "First Generation", 
+       y = "Average Score") + 
+  theme_light()
+```
+
+![](proposal_files/figure-gfm/boxplot-1.png)<!-- -->
 
 ``` r
 students %>%
@@ -605,83 +711,107 @@ students %>%
     ## 1 No         12.2  4.67
     ## 2 Yes        10.3  5
 
-``` r
-students %>%
-  count(sex)
-```
+However, we want to determine whether this sample observation difference
+of 1.83 between median average scores is due to chance or is actually
+statistically significant. We conducted a hypothesis test for the
+difference in median average scores between first generation and
+non-first generation students.
 
-    ## # A tibble: 2 x 2
-    ##   sex       n
-    ##   <chr> <int>
-    ## 1 F       208
-    ## 2 M       187
-
-``` r
-ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
-  geom_boxplot() + 
-  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
-```
-
-![](proposal_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+Since we are comparing two variables, median average score of first
+generation students and median average score of non-first generation
+students, we use permute to generate a null distribution of the
+difference in mean average scores.
 
 ``` r
-ggplot (students, mapping = aes(x = sex, y = avg_score)) +
-  geom_boxplot() + 
-  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "Frequency") + theme_light()
+avg_difference <- students %>%
+    group_by(first_gen) %>%
+  summarize(median = median (avg_score)) %>%
+    summarize(diff(median)) %>% 
+  pull()
 ```
-
-![](proposal_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
-ggplot (data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(studytime)), position = "fill") + 
-  labs(title = "Distribution of Study Time in First Generation Students", x = "First Generation", y = "proportion of different study time", fill = "Study Time") 
+set.seed(2019)
+null_students <- students %>%
+  specify(response = avg_score, explanatory = first_gen) %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in medians", 
+            order = c("No", "Yes"))
 ```
-
-![](proposal_files/figure-gfm/hist-studytime-1.png)<!-- -->
 
 ``` r
-students
+ggplot(data= null_students) +
+  geom_histogram(mapping = aes(x = stat), binwidth = 0.2) +
+  labs(title = "Null distribution of Difference in Median Average Scores", 
+       x = "Difference in Median Average Scores", 
+       y = "Frequency") +
+  geom_vline(xintercept = avg_difference, color = "red") +
+  geom_vline(xintercept = -avg_difference, color = "red")
 ```
 
-    ## # A tibble: 395 x 35
-    ##    school sex     age address famsize Pstatus  Medu  Fedu Mjob  Fjob 
-    ##    <chr>  <chr> <dbl> <chr>   <chr>   <chr>   <dbl> <dbl> <chr> <chr>
-    ##  1 GP     F        18 U       GT3     A           4     4 at_h… teac…
-    ##  2 GP     F        17 U       GT3     T           1     1 at_h… other
-    ##  3 GP     F        15 U       LE3     T           1     1 at_h… other
-    ##  4 GP     F        15 U       GT3     T           4     2 heal… serv…
-    ##  5 GP     F        16 U       GT3     T           3     3 other other
-    ##  6 GP     M        16 U       LE3     T           4     3 serv… other
-    ##  7 GP     M        16 U       LE3     T           2     2 other other
-    ##  8 GP     F        17 U       GT3     A           4     4 other teac…
-    ##  9 GP     M        15 U       LE3     A           3     2 serv… other
-    ## 10 GP     M        15 U       GT3     T           3     4 other other
-    ## # … with 385 more rows, and 25 more variables: reason <chr>,
-    ## #   guardian <chr>, traveltime <dbl>, studytime <dbl>, failures <dbl>,
-    ## #   schoolsup <chr>, famsup <chr>, paid <chr>, activities <chr>,
-    ## #   nursery <chr>, higher <chr>, internet <chr>, romantic <chr>,
-    ## #   famrel <dbl>, freetime <dbl>, goout <dbl>, Dalc <dbl>, Walc <dbl>,
-    ## #   health <dbl>, absences <dbl>, G1 <dbl>, G2 <dbl>, G3 <dbl>,
-    ## #   first_gen <chr>, avg_score <dbl>
+![](proposal_files/figure-gfm/plot-permute-1.png)<!-- -->
+
+The p-value of 0.008 is less than the significance level alpha = 0.05.
+Thus, we can state that there is a statistically significant difference
+between the median average scores of first and non-first generation
+students. This justifies our research question asking for the best
+predictors of high math achievement. Since we have shown a difference in
+median average scores between our comparison groups, we can evaluate how
+our predictor variables affect first and non-first generation students’
+mathematics scores differently.
 
 ``` r
-ggplot(data = students, mapping = aes(x = goout, y = avg_score, fill = first_gen)) +
-  geom_bar(stat = "Identity", position = position_dodge()) + 
-  labs(title = "Average Score vs. Going Out", subtitle = "in First and non-First Generation Students", x = "Going Out", y = "Average Score", fill = "First Generation")
+null_students %>%
+  filter(stat >= -avg_difference) %>%
+  summarise(p_value = 2 * (n() / 1000))
 ```
 
-![](proposal_files/figure-gfm/hist-goout-1.png)<!-- -->
-
-study time go out family size mother’s
-job
-
-``` r
-ggplot(data = students, mapping = aes(x = studytime, y = avg_score, fill = first_gen)) +
-  geom_bar(stat = "Identity", position = position_dodge()) + 
-  labs(title = "Average Score vs. Study Time", subtitle = "in First and non-First Generation Students", x = "Study Time", y = "Average Score", fill = "First Generation")
-```
-
-![](proposal_files/figure-gfm/hist2-1.png)<!-- -->
+    ## # A tibble: 1 x 1
+    ##   p_value
+    ##     <dbl>
+    ## 1   0.008
 
 ## Section 3. Data
+
+``` r
+glimpse(students)
+```
+
+    ## Observations: 395
+    ## Variables: 35
+    ## $ school     <chr> "GP", "GP", "GP", "GP", "GP", "GP", "GP", "GP", "GP",…
+    ## $ sex        <chr> "F", "F", "F", "F", "F", "M", "M", "F", "M", "M", "F"…
+    ## $ age        <dbl> 18, 17, 15, 15, 16, 16, 16, 17, 15, 15, 15, 15, 15, 1…
+    ## $ address    <chr> "U", "U", "U", "U", "U", "U", "U", "U", "U", "U", "U"…
+    ## $ famsize    <chr> "GT3", "GT3", "LE3", "GT3", "GT3", "LE3", "LE3", "GT3…
+    ## $ Pstatus    <chr> "A", "T", "T", "T", "T", "T", "T", "A", "A", "T", "T"…
+    ## $ Medu       <dbl> 4, 1, 1, 4, 3, 4, 2, 4, 3, 3, 4, 2, 4, 4, 2, 4, 4, 3,…
+    ## $ Fedu       <dbl> 4, 1, 1, 2, 3, 3, 2, 4, 2, 4, 4, 1, 4, 3, 2, 4, 4, 3,…
+    ## $ Mjob       <chr> "at_home", "at_home", "at_home", "health", "other", "…
+    ## $ Fjob       <chr> "teacher", "other", "other", "services", "other", "ot…
+    ## $ reason     <chr> "course", "course", "other", "home", "home", "reputat…
+    ## $ guardian   <chr> "mother", "father", "mother", "mother", "father", "mo…
+    ## $ traveltime <dbl> 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 3,…
+    ## $ studytime  <dbl> 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 1, 2, 3, 1, 3, 2,…
+    ## $ failures   <dbl> 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+    ## $ schoolsup  <chr> "yes", "no", "yes", "no", "no", "no", "no", "yes", "n…
+    ## $ famsup     <chr> "no", "yes", "no", "yes", "yes", "yes", "no", "yes", …
+    ## $ paid       <chr> "no", "no", "yes", "yes", "yes", "yes", "no", "no", "…
+    ## $ activities <chr> "no", "no", "no", "yes", "no", "yes", "no", "no", "no…
+    ## $ nursery    <chr> "yes", "no", "yes", "yes", "yes", "yes", "yes", "yes"…
+    ## $ higher     <chr> "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes…
+    ## $ internet   <chr> "no", "yes", "yes", "yes", "no", "yes", "yes", "no", …
+    ## $ romantic   <chr> "no", "no", "no", "yes", "no", "no", "no", "no", "no"…
+    ## $ famrel     <dbl> 4, 5, 4, 3, 4, 5, 4, 4, 4, 5, 3, 5, 4, 5, 4, 4, 3, 5,…
+    ## $ freetime   <dbl> 3, 3, 3, 2, 3, 4, 4, 1, 2, 5, 3, 2, 3, 4, 5, 4, 2, 3,…
+    ## $ goout      <dbl> 4, 3, 2, 2, 2, 2, 4, 4, 2, 1, 3, 2, 3, 3, 2, 4, 3, 2,…
+    ## $ Dalc       <dbl> 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
+    ## $ Walc       <dbl> 1, 1, 3, 1, 2, 2, 1, 1, 1, 1, 2, 1, 3, 2, 1, 2, 2, 1,…
+    ## $ health     <dbl> 3, 3, 3, 5, 5, 5, 3, 1, 1, 5, 2, 4, 5, 3, 3, 2, 2, 4,…
+    ## $ absences   <dbl> 6, 4, 10, 2, 4, 10, 0, 6, 0, 0, 0, 4, 2, 2, 0, 4, 6, …
+    ## $ G1         <dbl> 5, 5, 7, 15, 6, 15, 12, 6, 16, 14, 10, 10, 14, 10, 14…
+    ## $ G2         <dbl> 6, 5, 8, 14, 10, 15, 12, 5, 18, 15, 8, 12, 14, 10, 16…
+    ## $ G3         <dbl> 6, 6, 10, 15, 10, 15, 11, 6, 19, 15, 9, 12, 14, 11, 1…
+    ## $ avg_score  <dbl> 5.666667, 5.333333, 8.333333, 14.666667, 8.666667, 15…
+    ## $ first_gen  <chr> "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No",…

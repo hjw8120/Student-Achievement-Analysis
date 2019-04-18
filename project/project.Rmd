@@ -6,9 +6,108 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
+
+
+title: "MATH IS FUN IF YOU ANALYZE IT RIGHT!"
+author: "LAW students"
+date: "Mar. 29th"
+output: github_document
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse) 
+library(broom)
+library(infer)
+```
+
+### Load data
+```{r load-data, message=FALSE}
+students <- read_csv("/cloud/project/data/student-mat.csv")
+```
+
+
 
 Your project goes here! Before you submit, make sure your chunks are turned off with `echo = FALSE`. 
 
 You can add sections as you see fit. Make sure you have a section called Introduction at the beginning and a section called Conclusion at the end. The rest is up to you!
+
+Data analysis
+
+```{r}
+students <- students %>%
+  mutate(first_gen = case_when(
+    Medu < 4 & Fedu <4 ~ "Yes",
+    TRUE ~ "No"
+  ))
+```
+
+```{r avg-score}
+students <- students %>%
+  mutate(avg_score = ((G1 + G2 + G3)/3))
+```
+
+```{r}
+first <- students %>%
+  filter(first_gen == "Yes")
+```
+
+```{r}
+second <- students %>%
+  filter(first_gen == "No")
+```
+
+```{r first-selection}
+first_model <- lm(avg_score ~ school + 
+                  sex + age + address + 
+                  famsize + Pstatus + 
+                   Mjob + Fjob + 
+                  reason + guardian + traveltime +
+                  studytime + failures + 
+                  paid + activities +
+                  nursery + higher + internet +
+                  romantic + famrel + freetime +
+                  goout + Dalc + Walc +
+                  health + absences, data = first)
+first_model <- step(first_model, direction = "backward")
+tidy(first_model) %>% 
+  arrange(p.value)
+```
+
+```{r non-first}
+second_model <- lm(avg_score ~ school + 
+                  sex + age + address + 
+                  famsize + Pstatus + 
+                   Mjob + Fjob + 
+                  reason + guardian + traveltime +
+                  studytime + failures + 
+                  paid + activities +
+                  nursery + higher + internet +
+                  romantic + famrel + freetime +
+                  goout + Dalc + Walc +
+                  health + absences, data = second)
+second_model <- step(second_model, direction = "backward")
+tidy(second_model) %>% 
+  arrange(p.value)
+```
+
+```{r}
+glance(first_model) $ adj.r.squared
+glance(second_model) $ adj.r.squared
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

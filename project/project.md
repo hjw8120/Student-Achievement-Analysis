@@ -1086,7 +1086,7 @@ ggplot(data = students) +
   labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
        x = "First Generation",
        y = "proportions",
-       ill = "Job")
+       fill = "Job") 
 ```
 
 ![](project_files/figure-gfm/mjob-1.png)<!-- -->
@@ -1101,3 +1101,33 @@ ggplot(data = students) +
 ```
 
 ![](project_files/figure-gfm/fjob%60%60z%60%60xs-1.png)<!-- -->
+
+Factors we will be analyzing: Failures, parents’ job, goout, studytime
+
+``` r
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = Mjob, y = avg_score)) +
+  facet_wrap(~ first_gen)
+```
+
+![](project_files/figure-gfm/M-job-1.png)<!-- -->
+
+``` r
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = Fjob, y = avg_score)) +
+  facet_wrap(~ first_gen)
+```
+
+![](project_files/figure-gfm/F-job-1.png)<!-- -->
+
+``` r
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
+  facet_wrap(~ first_gen) +
+  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
+       subtitle = "First Generation vs. Non=first Generation",
+       x = "First Generation",
+       y = "Grade")
+```
+
+![](project_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->

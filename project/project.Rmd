@@ -134,7 +134,7 @@ ggplot(data = students) +
   labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
        x = "First Generation",
        y = "proportions",
-       ill = "Job")
+       fill = "Job") 
 ```
 
 ```{r fjob``z``xs}
@@ -146,11 +146,29 @@ ggplot(data = students) +
        fill = "Job")
 ```
 
+Factors we will be analyzing: Failures, parents' job, goout, studytime 
 
+```{r M-job}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = Mjob, y = avg_score)) +
+  facet_wrap(~ first_gen)
+```
 
+```{r F-job}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = Fjob, y = avg_score)) +
+  facet_wrap(~ first_gen)
+```
 
-
-
+```{r}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
+  facet_wrap(~ first_gen) +
+  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
+       subtitle = "First Generation vs. Non=first Generation",
+       x = "First Generation",
+       y = "Grade")
+```
 
 
 

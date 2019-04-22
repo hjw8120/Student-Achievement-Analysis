@@ -6,7 +6,7 @@ Mar. 29th
 ### Load packages
 
 ``` r
-library(tidyverse) 
+library(tidyverse)
 library(broom)
 library(infer)
 ```
@@ -68,10 +68,8 @@ students <- students %>%
 ``` r
 students <- students %>%
   mutate(first_gen = case_when(
-    Medu < 4 ~ "Yes",
-    Fedu < 4 ~ "Yes",
-    Medu == 4 ~ "No",
-    Fedu == 4 ~ "No"))
+    Medu < 4 & Fedu < 4 ~ "Yes",
+    TRUE ~ "No"))
 students %>%
   count(first_gen)
 ```
@@ -79,16 +77,16 @@ students %>%
     ## # A tibble: 2 x 2
     ##   first_gen     n
     ##   <chr>     <int>
-    ## 1 No           70
-    ## 2 Yes         325
+    ## 1 No          157
+    ## 2 Yes         238
 
 ``` r
-full_model <- lm(avg_score ~ school + 
-                  sex + age + address + 
-                  famsize + Pstatus + 
-                   Mjob + Fjob + 
+full_model <- lm(avg_score ~ school +
+                  sex + age + address +
+                  famsize + Pstatus +
+                   Mjob + Fjob +
                   reason + guardian + traveltime +
-                  studytime + failures + 
+                  studytime + failures +
                   paid + activities +
                   nursery + higher + internet +
                   romantic + famrel + freetime +
@@ -97,7 +95,7 @@ full_model <- lm(avg_score ~ school +
 final_model <- step(full_model, direction = "backward")
 ```
 
-    ## Start:  AIC=978.28
+    ## Start:  AIC=973.57
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
     ##     Mjob + Fjob + reason + guardian + traveltime + studytime + 
     ##     failures + paid + activities + nursery + higher + internet + 
@@ -105,36 +103,36 @@ final_model <- step(full_model, direction = "backward")
     ##     absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS     AIC
-    ## - reason      3     14.40 3912.3  973.73
-    ## - Fjob        4     44.85 3942.7  974.79
-    ## - guardian    2      7.05 3904.9  974.99
-    ## - paid        1      0.10 3898.0  976.29
-    ## - nursery     1      0.11 3898.0  976.29
-    ## - famrel      1      0.75 3898.6  976.35
-    ## - Pstatus     1      1.82 3899.7  976.46
-    ## - activities  1      1.98 3899.9  976.48
-    ## - age         1      2.31 3900.2  976.51
-    ## - first_gen   1      3.97 3901.9  976.68
-    ## - Dalc        1      6.77 3904.7  976.96
-    ## - Walc        1      6.81 3904.7  976.97
-    ## - school      1      7.85 3905.7  977.07
-    ## - internet    1      8.01 3905.9  977.09
-    ## - address     1     10.04 3907.9  977.29
-    ## - traveltime  1     11.45 3909.3  977.43
-    ## - absences    1     11.94 3909.8  977.48
-    ## - freetime    1     16.51 3914.4  977.95
-    ## <none>                    3897.9  978.28
-    ## - higher      1     22.36 3920.2  978.53
-    ## - romantic    1     25.64 3923.5  978.87
-    ## - famsize     1     26.08 3924.0  978.91
-    ## - health      1     29.16 3927.1  979.22
-    ## - studytime   1     71.00 3968.9  983.41
-    ## - Mjob        4    139.60 4037.5  984.17
-    ## - goout       1     88.58 3986.5  985.15
-    ## - sex         1    122.16 4020.0  988.46
-    ## - failures    1    382.53 4280.4 1013.25
+    ## - reason      3     18.34 3870.1  969.45
+    ## - guardian    2      7.96 3859.7  970.39
+    ## - Fjob        4     49.44 3901.2  970.61
+    ## - paid        1      0.21 3852.0  971.60
+    ## - famrel      1      0.44 3852.2  971.62
+    ## - Pstatus     1      0.55 3852.3  971.63
+    ## - age         1      0.89 3852.7  971.67
+    ## - nursery     1      1.26 3853.0  971.70
+    ## - activities  1      3.17 3854.9  971.90
+    ## - internet    1      6.31 3858.1  972.22
+    ## - Walc        1      7.89 3859.7  972.38
+    ## - Dalc        1      8.20 3860.0  972.41
+    ## - school      1      8.27 3860.0  972.42
+    ## - traveltime  1     10.06 3861.8  972.60
+    ## - address     1     10.93 3862.7  972.69
+    ## - absences    1     11.19 3863.0  972.72
+    ## - freetime    1     17.22 3869.0  973.34
+    ## - higher      1     18.75 3870.5  973.49
+    ## <none>                    3851.8  973.57
+    ## - health      1     25.16 3876.9  974.15
+    ## - famsize     1     31.47 3883.2  974.79
+    ## - romantic    1     34.67 3886.4  975.11
+    ## - first_gen   1     50.09 3901.9  976.68
+    ## - studytime   1     70.54 3922.3  978.74
+    ## - Mjob        4    136.56 3988.3  979.34
+    ## - goout       1     94.51 3946.3  981.15
+    ## - sex         1    120.36 3972.1  983.73
+    ## - failures    1    355.32 4207.1 1006.43
     ## 
-    ## Step:  AIC=973.73
+    ## Step:  AIC=969.45
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
     ##     Mjob + Fjob + guardian + traveltime + studytime + failures + 
     ##     paid + activities + nursery + higher + internet + romantic + 
@@ -142,482 +140,482 @@ final_model <- step(full_model, direction = "backward")
     ##     first_gen
     ## 
     ##              Df Sum of Sq    RSS     AIC
-    ## - Fjob        4     45.44 3957.7  970.29
-    ## - guardian    2      7.57 3919.9  970.50
-    ## - paid        1      0.00 3912.3  971.73
-    ## - nursery     1      0.05 3912.3  971.74
-    ## - famrel      1      0.83 3913.1  971.82
-    ## - activities  1      1.01 3913.3  971.83
-    ## - Pstatus     1      1.60 3913.9  971.89
-    ## - age         1      2.28 3914.6  971.96
-    ## - first_gen   1      5.26 3917.5  972.26
-    ## - Dalc        1      6.53 3918.8  972.39
-    ## - Walc        1      7.39 3919.7  972.48
-    ## - school      1      7.41 3919.7  972.48
-    ## - internet    1      7.78 3920.1  972.52
-    ## - address     1      8.03 3920.3  972.54
-    ## - traveltime  1     12.68 3925.0  973.01
-    ## - absences    1     14.70 3927.0  973.21
-    ## - freetime    1     17.00 3929.3  973.44
-    ## <none>                    3912.3  973.73
-    ## - higher      1     20.90 3933.2  973.84
-    ## - romantic    1     25.30 3937.6  974.28
-    ## - famsize     1     25.82 3938.1  974.33
-    ## - health      1     37.67 3950.0  975.52
-    ## - studytime   1     75.90 3988.2  979.32
-    ## - goout       1     94.76 4007.1  981.19
-    ## - Mjob        4    157.11 4069.4  981.28
-    ## - sex         1    119.80 4032.1  983.65
-    ## - failures    1    391.24 4303.5 1009.38
+    ## - guardian    2      8.75 3878.9  966.34
+    ## - Fjob        4     53.32 3923.4  966.86
+    ## - paid        1      0.00 3870.1  967.45
+    ## - Pstatus     1      0.46 3870.6  967.50
+    ## - famrel      1      0.52 3870.6  967.50
+    ## - nursery     1      0.91 3871.0  967.54
+    ## - age         1      0.95 3871.1  967.55
+    ## - activities  1      1.68 3871.8  967.62
+    ## - internet    1      6.13 3876.2  968.08
+    ## - Dalc        1      7.51 3877.6  968.22
+    ## - school      1      7.99 3878.1  968.26
+    ## - Walc        1      8.43 3878.5  968.31
+    ## - address     1      8.95 3879.1  968.36
+    ## - traveltime  1     11.66 3881.8  968.64
+    ## - absences    1     14.58 3884.7  968.94
+    ## - freetime    1     16.98 3887.1  969.18
+    ## - higher      1     17.46 3887.6  969.23
+    ## <none>                    3870.1  969.45
+    ## - famsize     1     30.59 3900.7  970.56
+    ## - romantic    1     33.87 3904.0  970.89
+    ## - health      1     33.91 3904.0  970.90
+    ## - first_gen   1     47.44 3917.5  972.26
+    ## - studytime   1     74.75 3944.9  975.01
+    ## - Mjob        4    155.32 4025.4  976.99
+    ## - goout       1    100.66 3970.8  977.59
+    ## - sex         1    118.33 3988.4  979.35
+    ## - failures    1    365.72 4235.8 1003.12
     ## 
-    ## Step:  AIC=970.29
+    ## Step:  AIC=966.34
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
-    ##     Mjob + guardian + traveltime + studytime + failures + paid + 
+    ##     Mjob + Fjob + traveltime + studytime + failures + paid + 
     ##     activities + nursery + higher + internet + romantic + famrel + 
     ##     freetime + goout + Dalc + Walc + health + absences + first_gen
     ## 
-    ##              Df Sum of Sq    RSS     AIC
-    ## - guardian    2      5.47 3963.2  966.84
-    ## - nursery     1      0.00 3957.7  968.29
-    ## - famrel      1      0.26 3958.0  968.32
-    ## - paid        1      0.27 3958.0  968.32
-    ## - age         1      1.99 3959.7  968.49
-    ## - activities  1      2.22 3959.9  968.51
-    ## - Pstatus     1      2.73 3960.5  968.56
-    ## - Walc        1      3.35 3961.1  968.63
-    ## - Dalc        1      4.85 3962.6  968.78
-    ## - school      1      6.20 3963.9  968.91
-    ## - internet    1      6.25 3964.0  968.92
-    ## - address     1      7.68 3965.4  969.06
-    ## - traveltime  1     12.81 3970.5  969.57
-    ## - absences    1     13.96 3971.7  969.68
-    ## - freetime    1     19.10 3976.8  970.19
-    ## <none>                    3957.7  970.29
-    ## - romantic    1     20.11 3977.8  970.29
-    ## - higher      1     21.25 3979.0  970.41
-    ## - famsize     1     22.09 3979.8  970.49
-    ## - health      1     38.72 3996.4  972.14
-    ## - first_gen   1     40.03 3997.8  972.27
-    ## - studytime   1     76.82 4034.5  975.89
-    ## - goout       1     94.43 4052.2  977.61
-    ## - Mjob        4    159.14 4116.9  977.86
-    ## - sex         1    121.61 4079.3  980.25
-    ## - failures    1    388.14 4345.9 1005.25
+    ##              Df Sum of Sq    RSS    AIC
+    ## - Fjob        4     50.89 3929.7 963.49
+    ## - age         1      0.01 3878.9 964.34
+    ## - paid        1      0.03 3878.9 964.35
+    ## - famrel      1      0.61 3879.5 964.40
+    ## - Pstatus     1      0.91 3879.8 964.44
+    ## - activities  1      1.73 3880.6 964.52
+    ## - nursery     1      2.05 3880.9 964.55
+    ## - internet    1      5.58 3884.4 964.91
+    ## - school      1      6.52 3885.4 965.01
+    ## - Walc        1      6.59 3885.4 965.01
+    ## - Dalc        1      6.83 3885.7 965.04
+    ## - traveltime  1     10.45 3889.3 965.40
+    ## - address     1     10.71 3889.6 965.43
+    ## - absences    1     17.02 3895.9 966.07
+    ## - freetime    1     19.68 3898.5 966.34
+    ## <none>                    3878.9 966.34
+    ## - higher      1     21.33 3900.2 966.51
+    ## - famsize     1     29.45 3908.3 967.33
+    ## - romantic    1     31.90 3910.8 967.58
+    ## - health      1     35.53 3914.4 967.94
+    ## - first_gen   1     46.89 3925.7 969.09
+    ## - studytime   1     76.82 3955.7 972.09
+    ## - Mjob        4    155.72 4034.6 973.89
+    ## - goout       1    106.13 3985.0 975.00
+    ## - sex         1    118.24 3997.1 976.20
+    ## - failures    1    360.84 4239.7 999.48
     ## 
-    ## Step:  AIC=966.84
+    ## Step:  AIC=963.49
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
     ##     Mjob + traveltime + studytime + failures + paid + activities + 
     ##     nursery + higher + internet + romantic + famrel + freetime + 
     ##     goout + Dalc + Walc + health + absences + first_gen
     ## 
-    ##              Df Sum of Sq    RSS     AIC
-    ## - nursery     1      0.16 3963.4  964.85
-    ## - paid        1      0.21 3963.4  964.86
-    ## - famrel      1      0.32 3963.5  964.87
-    ## - age         1      0.45 3963.6  964.88
-    ## - activities  1      2.23 3965.4  965.06
-    ## - Walc        1      2.73 3965.9  965.11
-    ## - Pstatus     1      3.05 3966.2  965.14
-    ## - Dalc        1      4.39 3967.6  965.28
-    ## - school      1      5.50 3968.7  965.39
-    ## - internet    1      6.13 3969.3  965.45
-    ## - address     1      9.82 3973.0  965.82
-    ## - traveltime  1     11.26 3974.5  965.96
-    ## - absences    1     15.22 3978.4  966.35
-    ## - romantic    1     19.30 3982.5  966.76
-    ## <none>                    3963.2  966.84
-    ## - famsize     1     21.41 3984.6  966.97
-    ## - freetime    1     21.47 3984.7  966.97
-    ## - higher      1     24.82 3988.0  967.30
-    ## - health      1     39.63 4002.8  968.77
-    ## - first_gen   1     40.75 4003.9  968.88
-    ## - studytime   1     80.04 4043.2  972.74
-    ## - Mjob        4    161.80 4125.0  974.64
-    ## - goout       1    102.21 4065.4  974.90
-    ## - sex         1    122.46 4085.7  976.86
-    ## - failures    1    391.17 4354.4 1002.02
+    ##              Df Sum of Sq    RSS    AIC
+    ## - age         1      0.00 3929.7 961.49
+    ## - famrel      1      0.08 3929.8 961.50
+    ## - paid        1      0.31 3930.0 961.52
+    ## - Pstatus     1      1.32 3931.1 961.62
+    ## - nursery     1      1.59 3931.3 961.65
+    ## - activities  1      2.40 3932.1 961.73
+    ## - Walc        1      2.52 3932.3 961.74
+    ## - Dalc        1      3.24 3933.0 961.82
+    ## - internet    1      4.37 3934.1 961.93
+    ## - school      1      7.36 3937.1 962.23
+    ## - traveltime  1     11.04 3940.8 962.60
+    ## - address     1     11.45 3941.2 962.64
+    ## - absences    1     15.35 3945.1 963.03
+    ## - freetime    1     18.31 3948.1 963.33
+    ## - higher      1     19.75 3949.5 963.47
+    ## <none>                    3929.7 963.49
+    ## - famsize     1     23.85 3953.6 963.88
+    ## - romantic    1     27.76 3957.5 964.27
+    ## - health      1     34.86 3964.6 964.98
+    ## - studytime   1     72.92 4002.7 968.75
+    ## - first_gen   1     74.20 4003.9 968.88
+    ## - Mjob        4    153.11 4082.9 970.59
+    ## - goout       1    103.71 4033.5 971.78
+    ## - sex         1    116.87 4046.6 973.07
+    ## - failures    1    366.72 4296.5 996.73
     ## 
-    ## Step:  AIC=964.85
-    ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
-    ##     Mjob + traveltime + studytime + failures + paid + activities + 
+    ## Step:  AIC=961.49
+    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
+    ##     traveltime + studytime + failures + paid + activities + nursery + 
     ##     higher + internet + romantic + famrel + freetime + goout + 
     ##     Dalc + Walc + health + absences + first_gen
     ## 
-    ##              Df Sum of Sq    RSS     AIC
-    ## - paid        1      0.24 3963.6  962.88
-    ## - famrel      1      0.33 3963.7  962.89
-    ## - age         1      0.43 3963.8  962.90
-    ## - activities  1      2.19 3965.5  963.07
-    ## - Walc        1      2.85 3966.2  963.14
-    ## - Pstatus     1      2.97 3966.3  963.15
-    ## - Dalc        1      4.34 3967.7  963.29
-    ## - school      1      5.61 3969.0  963.41
-    ## - internet    1      6.26 3969.6  963.48
-    ## - address     1      9.81 3973.2  963.83
-    ## - traveltime  1     11.32 3974.7  963.98
-    ## - absences    1     15.14 3978.5  964.36
-    ## - romantic    1     19.48 3982.8  964.79
-    ## <none>                    3963.4  964.85
-    ## - famsize     1     21.26 3984.6  964.97
-    ## - freetime    1     21.50 3984.9  964.99
-    ## - higher      1     24.84 3988.2  965.32
-    ## - health      1     39.58 4002.9  966.78
-    ## - first_gen   1     40.68 4004.0  966.89
-    ## - studytime   1     79.89 4043.2  970.74
-    ## - Mjob        4    161.70 4125.1  972.65
-    ## - goout       1    103.15 4066.5  973.00
-    ## - sex         1    122.31 4085.7  974.86
-    ## - failures    1    391.23 4354.6 1000.04
+    ##              Df Sum of Sq    RSS    AIC
+    ## - famrel      1      0.08 3929.8 959.50
+    ## - paid        1      0.31 3930.0 959.52
+    ## - Pstatus     1      1.32 3931.1 959.62
+    ## - nursery     1      1.60 3931.3 959.65
+    ## - activities  1      2.40 3932.1 959.73
+    ## - Walc        1      2.52 3932.3 959.74
+    ## - Dalc        1      3.25 3933.0 959.82
+    ## - internet    1      4.42 3934.2 959.93
+    ## - school      1      8.49 3938.2 960.34
+    ## - traveltime  1     11.10 3940.8 960.60
+    ## - address     1     11.46 3941.2 960.64
+    ## - absences    1     16.00 3945.7 961.09
+    ## - freetime    1     18.34 3948.1 961.33
+    ## <none>                    3929.7 961.49
+    ## - higher      1     20.17 3949.9 961.51
+    ## - famsize     1     23.85 3953.6 961.88
+    ## - romantic    1     28.21 3958.0 962.32
+    ## - health      1     35.06 3964.8 963.00
+    ## - studytime   1     73.60 4003.3 966.82
+    ## - first_gen   1     74.97 4004.7 966.95
+    ## - Mjob        4    153.18 4082.9 968.59
+    ## - goout       1    105.09 4034.8 969.91
+    ## - sex         1    116.87 4046.6 971.07
+    ## - failures    1    375.76 4305.5 995.56
     ## 
-    ## Step:  AIC=962.88
-    ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
-    ##     Mjob + traveltime + studytime + failures + activities + higher + 
-    ##     internet + romantic + famrel + freetime + goout + Dalc + 
+    ## Step:  AIC=959.5
+    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
+    ##     traveltime + studytime + failures + paid + activities + nursery + 
+    ##     higher + internet + romantic + freetime + goout + Dalc + 
     ##     Walc + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - famrel      1      0.31 3963.9 960.91
-    ## - age         1      0.43 3964.0 960.92
-    ## - activities  1      2.12 3965.7 961.09
-    ## - Walc        1      2.72 3966.3 961.15
-    ## - Pstatus     1      3.06 3966.7 961.18
-    ## - Dalc        1      4.51 3968.1 961.33
-    ## - school      1      5.60 3969.2 961.44
-    ## - internet    1      6.08 3969.7 961.48
-    ## - address     1      9.77 3973.4 961.85
-    ## - traveltime  1     11.26 3974.9 962.00
-    ## - absences    1     15.19 3978.8 962.39
-    ## - romantic    1     19.57 3983.2 962.82
-    ## <none>                    3963.6 962.88
-    ## - famsize     1     21.40 3985.0 963.01
-    ## - freetime    1     21.76 3985.4 963.04
-    ## - higher      1     24.61 3988.2 963.32
-    ## - health      1     39.35 4002.9 964.78
-    ## - first_gen   1     40.83 4004.4 964.93
-    ## - studytime   1     79.89 4043.5 968.76
-    ## - Mjob        4    161.46 4125.1 970.65
-    ## - goout       1    102.97 4066.6 971.01
-    ## - sex         1    125.27 4088.9 973.17
-    ## - failures    1    394.57 4358.2 998.36
+    ## - paid        1      0.29 3930.1 957.53
+    ## - Pstatus     1      1.31 3931.1 957.63
+    ## - nursery     1      1.61 3931.4 957.66
+    ## - activities  1      2.40 3932.2 957.74
+    ## - Walc        1      2.45 3932.3 957.74
+    ## - Dalc        1      3.29 3933.1 957.83
+    ## - internet    1      4.47 3934.3 957.95
+    ## - school      1      8.45 3938.3 958.35
+    ## - traveltime  1     11.09 3940.9 958.61
+    ## - address     1     11.42 3941.2 958.64
+    ## - absences    1     16.00 3945.8 959.10
+    ## - freetime    1     19.01 3948.8 959.40
+    ## <none>                    3929.8 959.50
+    ## - higher      1     20.20 3950.0 959.52
+    ## - famsize     1     23.86 3953.7 959.89
+    ## - romantic    1     28.46 3958.3 960.35
+    ## - health      1     35.09 3964.9 961.01
+    ## - studytime   1     73.78 4003.6 964.84
+    ## - first_gen   1     74.91 4004.7 964.96
+    ## - Mjob        4    153.21 4083.0 966.61
+    ## - goout       1    105.60 4035.4 967.97
+    ## - sex         1    117.89 4047.7 969.17
+    ## - failures    1    377.04 4306.9 993.69
     ## 
-    ## Step:  AIC=960.91
-    ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
-    ##     Mjob + traveltime + studytime + failures + activities + higher + 
-    ##     internet + romantic + freetime + goout + Dalc + Walc + health + 
-    ##     absences + first_gen
+    ## Step:  AIC=957.53
+    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
+    ##     traveltime + studytime + failures + activities + nursery + 
+    ##     higher + internet + romantic + freetime + goout + Dalc + 
+    ##     Walc + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - age         1      0.36 3964.3 958.94
-    ## - activities  1      2.11 3966.0 959.12
-    ## - Walc        1      2.54 3966.4 959.16
-    ## - Pstatus     1      3.06 3967.0 959.21
-    ## - Dalc        1      4.59 3968.5 959.37
-    ## - school      1      5.45 3969.3 959.45
-    ## - internet    1      6.23 3970.1 959.53
-    ## - address     1      9.72 3973.6 959.88
-    ## - traveltime  1     11.20 3975.1 960.02
-    ## - absences    1     15.09 3979.0 960.41
-    ## - romantic    1     19.99 3983.9 960.90
-    ## <none>                    3963.9 960.91
-    ## - famsize     1     21.38 3985.3 961.03
-    ## - freetime    1     22.84 3986.7 961.18
-    ## - higher      1     24.81 3988.7 961.37
-    ## - health      1     39.06 4003.0 962.78
-    ## - first_gen   1     40.57 4004.5 962.93
-    ## - studytime   1     80.02 4043.9 966.80
-    ## - Mjob        4    161.37 4125.3 968.67
-    ## - goout       1    102.80 4066.7 969.02
-    ## - sex         1    126.59 4090.5 971.33
-    ## - failures    1    398.22 4362.1 996.72
+    ## - Pstatus     1      1.39 3931.5 955.67
+    ## - nursery     1      1.73 3931.8 955.70
+    ## - Walc        1      2.31 3932.4 955.76
+    ## - activities  1      2.32 3932.4 955.76
+    ## - Dalc        1      3.45 3933.6 955.87
+    ## - internet    1      4.28 3934.4 955.96
+    ## - school      1      8.41 3938.5 956.37
+    ## - traveltime  1     11.01 3941.1 956.63
+    ## - address     1     11.38 3941.5 956.67
+    ## - absences    1     16.05 3946.2 957.14
+    ## - freetime    1     19.23 3949.3 957.46
+    ## - higher      1     19.90 3950.0 957.52
+    ## <none>                    3930.1 957.53
+    ## - famsize     1     24.07 3954.2 957.94
+    ## - romantic    1     28.55 3958.7 958.39
+    ## - health      1     34.83 3964.9 959.01
+    ## - studytime   1     73.65 4003.8 962.86
+    ## - first_gen   1     74.98 4005.1 962.99
+    ## - Mjob        4    153.05 4083.2 964.62
+    ## - goout       1    105.38 4035.5 965.98
+    ## - sex         1    120.89 4051.0 967.49
+    ## - failures    1    379.65 4309.8 991.95
     ## 
-    ## Step:  AIC=958.94
-    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
-    ##     traveltime + studytime + failures + activities + higher + 
-    ##     internet + romantic + freetime + goout + Dalc + Walc + health + 
-    ##     absences + first_gen
+    ## Step:  AIC=955.67
+    ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
+    ##     studytime + failures + activities + nursery + higher + internet + 
+    ##     romantic + freetime + goout + Dalc + Walc + health + absences + 
+    ##     first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - activities  1      2.03 3966.3 957.15
-    ## - Walc        1      2.56 3966.8 957.20
-    ## - Pstatus     1      3.18 3967.4 957.26
-    ## - Dalc        1      4.71 3969.0 957.41
-    ## - school      1      5.17 3969.4 957.46
-    ## - internet    1      6.61 3970.9 957.60
-    ## - address     1      9.81 3974.1 957.92
-    ## - traveltime  1     10.97 3975.2 958.04
-    ## - absences    1     14.77 3979.0 958.41
-    ## <none>                    3964.3 958.94
-    ## - romantic    1     20.81 3985.1 959.01
-    ## - famsize     1     21.28 3985.5 959.06
-    ## - freetime    1     23.02 3987.3 959.23
-    ## - higher      1     26.24 3990.5 959.55
-    ## - health      1     38.75 4003.0 960.79
-    ## - first_gen   1     40.94 4005.2 961.00
-    ## - studytime   1     79.74 4044.0 964.81
-    ## - Mjob        4    161.74 4126.0 966.74
-    ## - goout       1    105.72 4070.0 967.34
-    ## - sex         1    126.52 4090.8 969.35
-    ## - failures    1    413.05 4377.3 996.09
+    ## - nursery     1      1.59 3933.1 953.83
+    ## - Walc        1      2.20 3933.7 953.89
+    ## - activities  1      2.74 3934.2 953.94
+    ## - Dalc        1      3.32 3934.8 954.00
+    ## - internet    1      3.81 3935.3 954.05
+    ## - school      1      8.10 3939.6 954.48
+    ## - traveltime  1     11.14 3942.6 954.78
+    ## - address     1     11.50 3943.0 954.82
+    ## - absences    1     17.50 3949.0 955.42
+    ## - freetime    1     19.02 3950.5 955.57
+    ## <none>                    3931.5 955.67
+    ## - higher      1     20.36 3951.9 955.71
+    ## - famsize     1     26.39 3957.9 956.31
+    ## - romantic    1     28.26 3959.8 956.50
+    ## - health      1     35.23 3966.7 957.19
+    ## - studytime   1     73.36 4004.9 960.97
+    ## - first_gen   1     78.19 4009.7 961.45
+    ## - Mjob        4    154.46 4086.0 962.89
+    ## - goout       1    105.29 4036.8 964.11
+    ## - sex         1    120.79 4052.3 965.62
+    ## - failures    1    378.86 4310.4 990.01
     ## 
-    ## Step:  AIC=957.15
-    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
-    ##     traveltime + studytime + failures + higher + internet + romantic + 
+    ## Step:  AIC=953.83
+    ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
+    ##     studytime + failures + activities + higher + internet + romantic + 
     ##     freetime + goout + Dalc + Walc + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - Walc        1      2.62 3968.9 955.41
-    ## - Pstatus     1      3.77 3970.1 955.52
-    ## - Dalc        1      4.25 3970.5 955.57
-    ## - school      1      6.12 3972.4 955.76
-    ## - internet    1      6.56 3972.8 955.80
-    ## - address     1     10.84 3977.1 956.23
-    ## - traveltime  1     11.17 3977.5 956.26
-    ## - absences    1     14.62 3980.9 956.60
-    ## <none>                    3966.3 957.15
-    ## - famsize     1     20.95 3987.2 957.23
-    ## - romantic    1     21.66 3987.9 957.30
-    ## - freetime    1     22.06 3988.3 957.34
-    ## - higher      1     25.10 3991.4 957.64
-    ## - health      1     38.72 4005.0 958.98
-    ## - first_gen   1     39.95 4006.2 959.11
-    ## - studytime   1     78.15 4044.4 962.85
-    ## - Mjob        4    160.75 4127.0 964.84
-    ## - goout       1    107.61 4073.9 965.72
-    ## - sex         1    124.49 4090.8 967.35
-    ## - failures    1    411.96 4378.2 994.18
+    ## - Walc        1      2.45 3935.5 952.07
+    ## - activities  1      2.54 3935.6 952.08
+    ## - Dalc        1      3.18 3936.3 952.15
+    ## - internet    1      4.09 3937.2 952.24
+    ## - school      1      8.63 3941.7 952.69
+    ## - traveltime  1     11.35 3944.4 952.96
+    ## - address     1     11.44 3944.5 952.97
+    ## - absences    1     17.17 3950.3 953.55
+    ## - freetime    1     19.16 3952.3 953.75
+    ## <none>                    3933.1 953.83
+    ## - higher      1     20.33 3953.4 953.86
+    ## - famsize     1     25.27 3958.4 954.36
+    ## - romantic    1     28.66 3961.7 954.69
+    ## - health      1     35.04 3968.1 955.33
+    ## - studytime   1     72.34 4005.4 959.03
+    ## - first_gen   1     76.63 4009.7 959.45
+    ## - Mjob        4    153.54 4086.6 960.95
+    ## - goout       1    106.83 4039.9 962.41
+    ## - sex         1    120.12 4053.2 963.71
+    ## - failures    1    377.45 4310.5 988.02
     ## 
-    ## Step:  AIC=955.41
-    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
-    ##     traveltime + studytime + failures + higher + internet + romantic + 
+    ## Step:  AIC=952.07
+    ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
+    ##     studytime + failures + activities + higher + internet + romantic + 
     ##     freetime + goout + Dalc + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - Dalc        1      1.91 3970.8 953.60
-    ## - Pstatus     1      3.54 3972.5 953.76
-    ## - school      1      5.97 3974.9 954.00
-    ## - internet    1      6.48 3975.4 954.05
-    ## - address     1     10.10 3979.0 954.41
-    ## - traveltime  1     11.02 3979.9 954.50
-    ## - absences    1     15.96 3984.9 954.99
-    ## <none>                    3968.9 955.41
-    ## - freetime    1     20.68 3989.6 955.46
-    ## - famsize     1     21.64 3990.6 955.56
-    ## - romantic    1     22.07 3991.0 955.60
-    ## - higher      1     24.87 3993.8 955.88
-    ## - health      1     37.67 4006.6 957.14
-    ## - first_gen   1     38.17 4007.1 957.19
-    ## - studytime   1     75.64 4044.6 960.86
-    ## - Mjob        4    163.13 4132.0 963.32
-    ## - goout       1    110.42 4079.3 964.25
-    ## - sex         1    130.61 4099.5 966.20
-    ## - failures    1    412.33 4381.2 992.45
+    ## - Dalc        1      1.19 3936.7 950.19
+    ## - activities  1      2.60 3938.1 950.33
+    ## - internet    1      4.09 3939.6 950.48
+    ## - school      1      8.39 3943.9 950.91
+    ## - address     1     10.66 3946.2 951.14
+    ## - traveltime  1     11.17 3946.7 951.19
+    ## - freetime    1     18.01 3953.6 951.88
+    ## - absences    1     18.53 3954.1 951.93
+    ## <none>                    3935.5 952.07
+    ## - higher      1     20.22 3955.8 952.10
+    ## - famsize     1     25.99 3961.5 952.67
+    ## - romantic    1     28.99 3964.5 952.97
+    ## - health      1     34.12 3969.7 953.48
+    ## - studytime   1     70.08 4005.6 957.04
+    ## - first_gen   1     74.83 4010.4 957.51
+    ## - Mjob        4    155.23 4090.8 959.35
+    ## - goout       1    109.86 4045.4 960.95
+    ## - sex         1    126.34 4061.9 962.55
+    ## - failures    1    377.96 4313.5 986.30
     ## 
-    ## Step:  AIC=953.6
-    ## avg_score ~ school + sex + address + famsize + Pstatus + Mjob + 
-    ##     traveltime + studytime + failures + higher + internet + romantic + 
+    ## Step:  AIC=950.19
+    ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
+    ##     studytime + failures + activities + higher + internet + romantic + 
     ##     freetime + goout + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - Pstatus     1      3.44 3974.3 951.94
-    ## - school      1      5.47 3976.3 952.14
-    ## - internet    1      6.15 3977.0 952.21
-    ## - address     1     10.72 3981.5 952.66
-    ## - traveltime  1     11.71 3982.5 952.76
-    ## - absences    1     14.91 3985.7 953.08
-    ## - freetime    1     19.68 3990.5 953.55
-    ## <none>                    3970.8 953.60
-    ## - famsize     1     20.80 3991.6 953.66
-    ## - romantic    1     22.13 3993.0 953.79
-    ## - higher      1     24.53 3995.4 954.03
-    ## - first_gen   1     36.88 4007.7 955.25
-    ## - health      1     38.58 4009.4 955.42
-    ## - studytime   1     77.76 4048.6 959.26
-    ## - Mjob        4    164.98 4135.8 961.68
-    ## - goout       1    122.21 4093.0 963.57
-    ## - sex         1    129.42 4100.2 964.27
-    ## - failures    1    418.73 4389.5 991.20
+    ## - activities  1      2.27 3939.0 948.42
+    ## - internet    1      3.89 3940.6 948.58
+    ## - school      1      7.99 3944.7 948.99
+    ## - address     1     11.24 3948.0 949.32
+    ## - traveltime  1     11.74 3948.5 949.37
+    ## - freetime    1     17.30 3954.0 949.92
+    ## - absences    1     17.69 3954.4 949.96
+    ## - higher      1     19.90 3956.6 950.18
+    ## <none>                    3936.7 950.19
+    ## - famsize     1     25.32 3962.0 950.72
+    ## - romantic    1     29.13 3965.9 951.10
+    ## - health      1     34.86 3971.6 951.67
+    ## - studytime   1     71.76 4008.5 955.33
+    ## - first_gen   1     74.38 4011.1 955.58
+    ## - Mjob        4    156.35 4093.1 957.58
+    ## - goout       1    121.03 4057.8 960.15
+    ## - sex         1    126.56 4063.3 960.69
+    ## - failures    1    382.19 4318.9 984.79
     ## 
-    ## Step:  AIC=951.94
+    ## Step:  AIC=948.42
     ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
     ##     studytime + failures + higher + internet + romantic + freetime + 
     ##     goout + health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - school      1      5.09 3979.3 950.45
-    ## - internet    1      5.25 3979.5 950.46
-    ## - address     1     11.02 3985.3 951.03
-    ## - traveltime  1     11.91 3986.2 951.12
-    ## - absences    1     16.97 3991.2 951.62
-    ## - freetime    1     19.32 3993.6 951.86
-    ## <none>                    3974.3 951.94
-    ## - romantic    1     21.57 3995.8 952.08
-    ## - famsize     1     23.90 3998.2 952.31
-    ## - higher      1     25.33 3999.6 952.45
-    ## - first_gen   1     38.21 4012.5 953.72
-    ## - health      1     39.38 4013.6 953.83
-    ## - studytime   1     77.28 4051.5 957.55
-    ## - Mjob        4    166.37 4140.6 960.14
-    ## - goout       1    122.41 4096.7 961.92
-    ## - sex         1    128.89 4103.1 962.55
-    ## - failures    1    418.05 4392.3 989.45
+    ## - internet    1      3.83 3942.8 946.80
+    ## - school      1      9.22 3948.2 947.34
+    ## - traveltime  1     11.89 3950.9 947.61
+    ## - address     1     12.32 3951.3 947.65
+    ## - freetime    1     16.48 3955.5 948.07
+    ## - absences    1     17.85 3956.8 948.21
+    ## - higher      1     18.92 3957.9 948.31
+    ## <none>                    3939.0 948.42
+    ## - famsize     1     25.30 3964.3 948.95
+    ## - romantic    1     30.04 3969.0 949.42
+    ## - health      1     34.82 3973.8 949.90
+    ## - studytime   1     70.01 4009.0 953.38
+    ## - first_gen   1     73.47 4012.5 953.72
+    ## - Mjob        4    155.76 4094.8 955.74
+    ## - goout       1    122.24 4061.2 958.49
+    ## - sex         1    124.42 4063.4 958.70
+    ## - failures    1    380.79 4319.8 982.87
     ## 
-    ## Step:  AIC=950.45
-    ## avg_score ~ sex + address + famsize + Mjob + traveltime + studytime + 
-    ##     failures + higher + internet + romantic + freetime + goout + 
+    ## Step:  AIC=946.8
+    ## avg_score ~ school + sex + address + famsize + Mjob + traveltime + 
+    ##     studytime + failures + higher + romantic + freetime + goout + 
     ##     health + absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - internet    1      4.68 3984.0 948.91
-    ## - address     1      8.34 3987.7 949.27
-    ## - traveltime  1      9.99 3989.3 949.44
-    ## - absences    1     15.06 3994.4 949.94
-    ## - romantic    1     20.03 3999.4 950.43
-    ## <none>                    3979.3 950.45
-    ## - freetime    1     20.29 3999.6 950.45
-    ## - higher      1     25.68 4005.0 950.99
-    ## - famsize     1     25.80 4005.1 951.00
-    ## - first_gen   1     39.10 4018.5 952.31
-    ## - health      1     41.45 4020.8 952.54
-    ## - studytime   1     74.20 4053.5 955.74
-    ## - Mjob        4    164.47 4143.8 958.44
-    ## - goout       1    122.72 4102.1 960.44
-    ## - sex         1    126.21 4105.6 960.78
-    ## - failures    1    416.23 4395.6 987.74
+    ## - school      1      8.57 3951.4 945.66
+    ## - traveltime  1     11.83 3954.7 945.99
+    ## - address     1     14.82 3957.7 946.29
+    ## - freetime    1     16.89 3959.7 946.49
+    ## - higher      1     18.52 3961.4 946.65
+    ## - absences    1     19.54 3962.4 946.76
+    ## <none>                    3942.8 946.80
+    ## - famsize     1     24.64 3967.5 947.26
+    ## - romantic    1     28.32 3971.2 947.63
+    ## - health      1     37.74 3980.6 948.57
+    ## - studytime   1     72.86 4015.7 952.04
+    ## - first_gen   1     74.23 4017.1 952.17
+    ## - Mjob        4    158.78 4101.6 954.40
+    ## - goout       1    120.52 4063.4 956.70
+    ## - sex         1    126.85 4069.7 957.31
+    ## - failures    1    383.89 4326.7 981.50
     ## 
-    ## Step:  AIC=948.91
+    ## Step:  AIC=945.66
     ## avg_score ~ sex + address + famsize + Mjob + traveltime + studytime + 
     ##     failures + higher + romantic + freetime + goout + health + 
     ##     absences + first_gen
     ## 
     ##              Df Sum of Sq    RSS    AIC
-    ## - traveltime  1     10.05 3994.1 947.90
-    ## - address     1     10.90 3994.9 947.99
-    ## - absences    1     16.92 4000.9 948.58
-    ## - romantic    1     18.43 4002.5 948.73
-    ## <none>                    3984.0 948.91
-    ## - freetime    1     20.68 4004.7 948.95
-    ## - famsize     1     24.90 4008.9 949.37
-    ## - higher      1     25.21 4009.2 949.40
-    ## - first_gen   1     38.43 4022.5 950.70
-    ## - health      1     44.81 4028.8 951.33
-    ## - studytime   1     77.55 4061.6 954.52
-    ## - Mjob        4    170.53 4154.6 957.46
-    ## - goout       1    120.66 4104.7 958.69
-    ## - sex         1    129.10 4113.1 959.51
-    ## - failures    1    420.74 4404.8 986.56
+    ## - traveltime  1      9.34 3960.7 944.59
+    ## - address     1     10.56 3962.0 944.72
+    ## - absences    1     16.70 3968.1 945.33
+    ## - freetime    1     17.93 3969.3 945.45
+    ## - higher      1     19.12 3970.5 945.57
+    ## <none>                    3951.4 945.66
+    ## - romantic    1     25.91 3977.3 946.24
+    ## - famsize     1     26.91 3978.3 946.34
+    ## - health      1     40.11 3991.5 947.65
+    ## - studytime   1     68.42 4019.8 950.44
+    ## - first_gen   1     71.05 4022.5 950.70
+    ## - Mjob        4    156.09 4107.5 952.97
+    ## - goout       1    120.64 4072.0 955.54
+    ## - sex         1    123.10 4074.5 955.78
+    ## - failures    1    382.90 4334.3 980.20
     ## 
-    ## Step:  AIC=947.9
+    ## Step:  AIC=944.59
     ## avg_score ~ sex + address + famsize + Mjob + studytime + failures + 
     ##     higher + romantic + freetime + goout + health + absences + 
     ##     first_gen
     ## 
     ##             Df Sum of Sq    RSS    AIC
-    ## - absences   1     18.04 4012.1 947.68
-    ## - romantic   1     19.20 4013.3 947.80
-    ## <none>                   3994.1 947.90
-    ## - address    1     20.38 4014.5 947.92
-    ## - freetime   1     21.88 4016.0 948.06
-    ## - famsize    1     22.34 4016.4 948.11
-    ## - higher     1     25.83 4019.9 948.45
-    ## - first_gen  1     38.73 4032.8 949.72
-    ## - health     1     44.75 4038.8 950.31
-    ## - studytime  1     83.49 4077.6 954.08
-    ## - Mjob       4    177.99 4172.1 957.13
-    ## - goout      1    125.06 4119.1 958.08
-    ## - sex        1    126.87 4121.0 958.26
-    ## - failures   1    425.23 4419.3 985.87
+    ## - absences   1     17.77 3978.5 944.36
+    ## - freetime   1     19.00 3979.7 944.48
+    ## - address    1     19.56 3980.3 944.54
+    ## - higher     1     19.60 3980.3 944.54
+    ## <none>                   3960.7 944.59
+    ## - famsize    1     24.39 3985.1 945.02
+    ## - romantic   1     26.85 3987.6 945.26
+    ## - health     1     40.03 4000.8 946.57
+    ## - first_gen  1     72.06 4032.8 949.72
+    ## - studytime  1     73.78 4034.5 949.88
+    ## - Mjob       4    161.30 4122.0 952.36
+    ## - sex        1    120.99 4081.7 954.48
+    ## - goout      1    124.95 4085.7 954.86
+    ## - failures   1    386.64 4347.4 979.38
     ## 
-    ## Step:  AIC=947.68
+    ## Step:  AIC=944.36
     ## avg_score ~ sex + address + famsize + Mjob + studytime + failures + 
     ##     higher + romantic + freetime + goout + health + first_gen
     ## 
     ##             Df Sum of Sq    RSS    AIC
-    ## - romantic   1     14.49 4026.6 947.11
-    ## - address    1     18.81 4030.9 947.53
-    ## - freetime   1     19.12 4031.2 947.56
-    ## <none>                   4012.1 947.68
-    ## - famsize    1     23.60 4035.7 948.00
-    ## - higher     1     24.30 4036.4 948.07
-    ## - first_gen  1     38.20 4050.3 949.43
-    ## - health     1     46.48 4058.6 950.23
-    ## - studytime  1     77.39 4089.5 953.23
-    ## - Mjob       4    175.48 4187.6 956.59
-    ## - goout      1    119.70 4131.8 957.30
-    ## - sex        1    119.84 4132.0 957.31
-    ## - failures   1    420.88 4433.0 985.09
+    ## - freetime   1     16.47 3995.0 943.99
+    ## - address    1     18.02 3996.5 944.15
+    ## - higher     1     18.28 3996.8 944.17
+    ## <none>                   3978.5 944.36
+    ## - romantic   1     21.37 3999.9 944.48
+    ## - famsize    1     25.71 4004.2 944.91
+    ## - health     1     41.68 4020.2 946.48
+    ## - studytime  1     68.10 4046.6 949.07
+    ## - first_gen  1     71.80 4050.3 949.43
+    ## - Mjob       4    158.68 4137.2 951.81
+    ## - sex        1    114.18 4092.7 953.54
+    ## - goout      1    119.67 4098.2 954.07
+    ## - failures   1    382.48 4361.0 978.62
     ## 
-    ## Step:  AIC=947.11
+    ## Step:  AIC=943.99
     ## avg_score ~ sex + address + famsize + Mjob + studytime + failures + 
-    ##     higher + freetime + goout + health + first_gen
+    ##     higher + romantic + goout + health + first_gen
     ## 
     ##             Df Sum of Sq    RSS    AIC
-    ## - address    1     18.45 4045.1 946.91
-    ## - freetime   1     18.79 4045.4 946.95
-    ## <none>                   4026.6 947.11
-    ## - famsize    1     21.60 4048.2 947.22
-    ## - higher     1     28.77 4055.4 947.92
-    ## - first_gen  1     36.76 4063.4 948.70
-    ## - health     1     48.82 4075.4 949.87
-    ## - studytime  1     73.67 4100.3 952.27
-    ## - Mjob       4    177.34 4203.9 956.13
-    ## - goout      1    119.50 4146.1 956.66
-    ## - sex        1    130.05 4156.7 957.66
-    ## - failures   1    435.10 4461.7 985.64
+    ## - higher     1     18.10 4013.1 943.78
+    ## - address    1     18.79 4013.8 943.85
+    ## <none>                   3995.0 943.99
+    ## - romantic   1     21.01 4016.0 944.07
+    ## - famsize    1     25.03 4020.0 944.46
+    ## - health     1     39.46 4034.4 945.88
+    ## - studytime  1     64.41 4059.4 948.31
+    ## - first_gen  1     70.72 4065.7 948.93
+    ## - Mjob       4    155.46 4150.4 951.07
+    ## - goout      1    104.56 4099.5 952.20
+    ## - sex        1    133.33 4128.3 954.96
+    ## - failures   1    376.27 4371.3 977.55
     ## 
-    ## Step:  AIC=946.91
-    ## avg_score ~ sex + famsize + Mjob + studytime + failures + higher + 
-    ##     freetime + goout + health + first_gen
+    ## Step:  AIC=943.78
+    ## avg_score ~ sex + address + famsize + Mjob + studytime + failures + 
+    ##     romantic + goout + health + first_gen
     ## 
     ##             Df Sum of Sq    RSS    AIC
-    ## - freetime   1     19.63 4064.7 946.83
-    ## <none>                   4045.1 946.91
-    ## - famsize    1     24.27 4069.3 947.28
-    ## - higher     1     28.48 4073.5 947.68
-    ## - first_gen  1     37.06 4082.1 948.52
-    ## - health     1     51.89 4096.9 949.95
-    ## - studytime  1     70.93 4116.0 951.78
-    ## - goout      1    114.35 4159.4 955.92
-    ## - sex        1    124.34 4169.4 956.87
-    ## - Mjob       4    194.17 4239.2 957.43
-    ## - failures   1    451.73 4496.8 986.73
+    ## - address    1     18.55 4031.6 943.60
+    ## <none>                   4013.1 943.78
+    ## - famsize    1     25.72 4038.8 944.30
+    ## - romantic   1     26.10 4039.2 944.34
+    ## - health     1     38.36 4051.4 945.54
+    ## - studytime  1     72.06 4085.1 948.81
+    ## - first_gen  1     77.81 4090.9 949.36
+    ## - Mjob       4    160.76 4173.8 951.29
+    ## - goout      1    104.71 4117.8 951.95
+    ## - sex        1    122.08 4135.2 953.62
+    ## - failures   1    441.14 4454.2 982.97
     ## 
-    ## Step:  AIC=946.83
-    ## avg_score ~ sex + famsize + Mjob + studytime + failures + higher + 
+    ## Step:  AIC=943.6
+    ## avg_score ~ sex + famsize + Mjob + studytime + failures + romantic + 
     ##     goout + health + first_gen
     ## 
     ##             Df Sum of Sq    RSS    AIC
-    ## <none>                   4064.7 946.83
-    ## - famsize    1     23.43 4088.1 947.10
-    ## - higher     1     28.17 4092.9 947.55
-    ## - first_gen  1     33.35 4098.0 948.05
-    ## - health     1     49.07 4113.8 949.57
-    ## - studytime  1     66.30 4131.0 951.22
-    ## - goout      1     97.13 4161.8 954.15
-    ## - Mjob       4    192.95 4257.6 957.15
-    ## - sex        1    145.40 4210.1 958.71
-    ## - failures   1    445.20 4509.9 985.88
+    ## <none>                   4031.6 943.60
+    ## - romantic   1     25.66 4057.3 944.11
+    ## - famsize    1     28.63 4060.3 944.40
+    ## - health     1     41.03 4072.7 945.60
+    ## - studytime  1     69.11 4100.7 948.32
+    ## - first_gen  1     78.87 4110.5 949.25
+    ## - goout      1     99.25 4130.9 951.21
+    ## - Mjob       4    175.48 4207.1 952.43
+    ## - sex        1    116.85 4148.5 952.89
+    ## - failures   1    457.36 4489.0 984.05
 
 ``` r
-tidy(final_model) %>% 
+tidy(final_model) %>%
   select(term, estimate)
 ```
 
     ## # A tibble: 13 x 2
     ##    term         estimate
     ##    <chr>           <dbl>
-    ##  1 (Intercept)   10.7   
-    ##  2 sexM           1.33  
-    ##  3 famsizeLE3     0.545 
-    ##  4 Mjobhealth     1.85  
-    ##  5 Mjobother     -0.0644
-    ##  6 Mjobservices   1.26  
-    ##  7 Mjobteacher   -0.0528
-    ##  8 studytime      0.527 
-    ##  9 failures      -1.56  
-    ## 10 higheryes      1.31  
-    ## 11 goout         -0.453 
-    ## 12 health        -0.259 
-    ## 13 first_genYes  -0.854
+    ##  1 (Intercept)   12.1   
+    ##  2 sexM           1.19  
+    ##  3 famsizeLE3     0.603 
+    ##  4 Mjobhealth     1.63  
+    ##  5 Mjobother      0.0578
+    ##  6 Mjobservices   1.20  
+    ##  7 Mjobteacher   -0.396 
+    ##  8 studytime      0.534 
+    ##  9 failures      -1.55  
+    ## 10 romanticyes   -0.552 
+    ## 11 goout         -0.458 
+    ## 12 health        -0.237 
+    ## 13 first_genYes  -1.15
 
 We will be comparing achievement levels between first generation and
 non-first generation Portuguese students. We classify non-first
@@ -626,16 +624,18 @@ education. To do this, we created a `first_gen` variable that labels
 first generation students (those with both mothers and fathers who have
 never attended higher education) as “yes” and non-first generation
 students (those with at least one parent who received higher education )
-as “no.” There are 325 observations for first generation students and 70
-observations for non-first generation students.
+as “no.” There are 238 observations for first generation students and
+157 observations for non-first generation students.
 
 We used model selection to select 13 variables as the most influential
 on average student grade. We conducted backwards selection on the full
 model to create a multiple linear regression model with these 13
-variables. avg\_score-hat = 10.66 + 1.33 \* sexM + 0.54 \* famsizeLE3 +
-1.85 \* Mjobhealth - 0.06 \* Mjobother + 1.26 \* Mjobservices - 0.05 \*
-Mjobteacher + 0.53 \* studytime - 1.56 \* failures + 1.31 \* higheryes -
-0.45 \* goout - 0.26 \* health - 0.85 \* first\_genYes
+variables.
+
+avg\_score-hat = 12.10 + 1.19 \* sexM + 0.60 \* famsizeLE3 + 1.63 \*
+Mjobhealth - 0.06 \* Mjobother + 1.20 \* Mjobservices - 0.40 \*
+Mjobteacher + 0.53 \* studytime - 1.55 \* failures - 0.55 \* romanticyes
+- 0.46 \* goout - 0.24 \* health - 1.15 \* first\_genYes
 
 Linear regression modelling will be useful in helping us determine which
 variables are most influential on student achievement, as well as give
@@ -683,16 +683,17 @@ ggplot(data = students) +
 
 We compared first and non-first generation students’ average scores in a
 boxplot diagram. The boxplot shows that, in this sample, the non-first
-generation students’ median average score is 12.2, which is slightly
-higher than the first generation students’ median average score of 10.3.
-There are no outliers in either groups.
+generation students’ median average score is 12, which is slightly
+higher than the first generation students’ median average score of 10.
+They have spreads with IQRs of around 4 to 5. There are no apparent
+outliers in either group.
 
 ``` r
 ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
-  geom_boxplot() + 
-  labs(title = "Average Score vs. First and Non-First Generation Students", 
-       x = "First Generation", 
-       y = "Average Score") + 
+  geom_boxplot() +
+  labs(title = "Average Score vs. First and Non-First Generation Students",
+       x = "First Generation",
+       y = "Average Score") +
   theme_light()
 ```
 
@@ -708,11 +709,11 @@ students %>%
     ## # A tibble: 2 x 3
     ##   first_gen   med   IQR
     ##   <chr>     <dbl> <dbl>
-    ## 1 No         12.2  4.67
-    ## 2 Yes        10.3  5
+    ## 1 No           12  5.33
+    ## 2 Yes          10  4.67
 
 However, we want to determine whether this sample observation difference
-of 1.83 between median average scores is due to chance or is actually
+of 2 between median average scores is due to chance or is actually
 statistically significant. We conducted a hypothesis test for the
 difference in median average scores between first generation and
 non-first generation students.
@@ -724,9 +725,9 @@ difference in mean average scores.
 
 ``` r
 avg_difference <- students %>%
-    group_by(first_gen) %>%
+                group_by(first_gen) %>%
   summarize(median = median (avg_score)) %>%
-    summarize(diff(median)) %>% 
+                summarize(diff(median)) %>%
   pull()
 ```
 
@@ -736,15 +737,15 @@ null_students <- students %>%
   specify(response = avg_score, explanatory = first_gen) %>%
   hypothesize(null = "independence") %>%
   generate(1000, type = "permute") %>%
-  calculate(stat = "diff in medians", 
+  calculate(stat = "diff in medians",
             order = c("No", "Yes"))
 ```
 
 ``` r
 ggplot(data= null_students) +
   geom_histogram(mapping = aes(x = stat), binwidth = 0.2) +
-  labs(title = "Null distribution of Difference in Median Average Scores", 
-       x = "Difference in Median Average Scores", 
+  labs(title = "Null distribution of Difference in Median Average Scores",
+       x = "Difference in Median Average Scores",
        y = "Frequency") +
   geom_vline(xintercept = avg_difference, color = "red") +
   geom_vline(xintercept = -avg_difference, color = "red")
@@ -752,8 +753,8 @@ ggplot(data= null_students) +
 
 ![](proposal_files/figure-gfm/plot-permute-1.png)<!-- -->
 
-The p-value of 0.008 is less than the significance level alpha = 0.05.
-Thus, we can state that there is a statistically significant difference
+The p-value of 0 is less than the significance level alpha = 0.05. Thus,
+we can state that there is a statistically significant difference
 between the median average scores of first and non-first generation
 students. This justifies our research question asking for the best
 predictors of high math achievement. Since we have shown a difference in
@@ -770,7 +771,7 @@ null_students %>%
     ## # A tibble: 1 x 1
     ##   p_value
     ##     <dbl>
-    ## 1   0.008
+    ## 1       0
 
 ## Section 3. Data
 
@@ -814,4 +815,4 @@ glimpse(students)
     ## $ G2         <dbl> 6, 5, 8, 14, 10, 15, 12, 5, 18, 15, 8, 12, 14, 10, 16…
     ## $ G3         <dbl> 6, 6, 10, 15, 10, 15, 11, 6, 19, 15, 9, 12, 14, 11, 1…
     ## $ avg_score  <dbl> 5.666667, 5.333333, 8.333333, 14.666667, 8.666667, 15…
-    ## $ first_gen  <chr> "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No",…
+    ## $ first_gen  <chr> "No", "Yes", "Yes", "No", "Yes", "No", "Yes", "No", "…

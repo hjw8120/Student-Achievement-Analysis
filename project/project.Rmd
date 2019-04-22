@@ -100,7 +100,51 @@ glance(second_model) $ adj.r.squared
 ```
 
 
+```{r}
+ggplot(data = students %>%
+         group_by(studytime)) +
+  geom_boxplot(mapping = aes(x = as.character(studytime), y = avg_score)) +
+  facet_wrap(~first_gen)
+```
 
+
+```{r}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = as.character(goout), y = avg_score)) +
+  facet_wrap(~first_gen)
+```
+
+
+non-first generation: failures, mother's job, father's job, higher 
+first generation: failures, sex, studytime, goout 
+
+```{r failures}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
+  labs(title = "Proportion of Failures in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Number of Failures")
+```
+
+
+```{r mjob}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
+  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       ill = "Job")
+```
+
+```{r fjob``z``xs}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
+  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Job")
+```
 
 
 

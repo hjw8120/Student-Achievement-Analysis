@@ -1048,3 +1048,56 @@ glance(second_model) $ adj.r.squared
 ```
 
     ## [1] 0.2401251
+
+``` r
+ggplot(data = students %>%
+         group_by(studytime)) +
+  geom_boxplot(mapping = aes(x = as.character(studytime), y = avg_score)) +
+  facet_wrap(~first_gen)
+```
+
+![](project_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = as.character(goout), y = avg_score)) +
+  facet_wrap(~first_gen)
+```
+
+![](project_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+non-first generation: failures, mother’s job, father’s job, higher first
+generation: failures, sex, studytime, goout
+
+``` r
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
+  labs(title = "Proportion of Failures in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Number of Failures")
+```
+
+![](project_files/figure-gfm/failures-1.png)<!-- -->
+
+``` r
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
+  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       ill = "Job")
+```
+
+![](project_files/figure-gfm/mjob-1.png)<!-- -->
+
+``` r
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
+  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Job")
+```
+
+![](project_files/figure-gfm/fjob%60%60z%60%60xs-1.png)<!-- -->

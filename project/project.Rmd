@@ -172,82 +172,11 @@ avg_score-hat = -0.996 - 2.48 * failures + 3.45 * Mjobhealth + 3.76 * Fjobteache
 
 The variables with the lowest p-values, meaning they are most influential on average score in non-first generation students are: failures, Mjob, Fjob, and higher.
 
+Below is our adjusted r squared value for both models. We are 24.5% confident that the first model predicts the mathematics performance of first generation students. We are 24% confident that the second model predicts the mathematics performance of non-first generation students
 ```{r}
 glance(first_model) $ adj.r.squared
 glance(second_model) $ adj.r.squared
 ```
-
-
-```{r}
-ggplot(data = students %>%
-         group_by(studytime)) +
-  geom_boxplot(mapping = aes(x = as.character(studytime), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
-
-
-```{r}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(goout), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
-
-
-non-first generation: failures, mother's job, father's job, higher 
-first generation: failures, sex, studytime, goout 
-
-```{r failures}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
-  labs(title = "Proportion of Failures in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Number of Failures")
-```
-
-
-```{r mjob}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
-  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job") 
-```
-
-```{r fjob``z``xs}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
-  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job")
-```
-
-Factors we will be analyzing: Failures, parents' job, goout, studytime 
-
-```{r M-job}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Mjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
-```{r F-job}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Fjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
-```{r}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
-  facet_wrap(~ first_gen) +
-  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
-       subtitle = "First Generation vs. Non=first Generation",
-       x = "First Generation",
-       y = "Grade")
-```
-
 
 Here is a shiny app that shows the effects of the influencing variables we chose for both first and non-first generation students using interactive bar and box plots. The influencing variables for First Generation are: failures, sex, studytime, and goout. The influencing variables for Non-First Generation are: failures, Mjob, Fjob, and higher.
 
@@ -432,3 +361,62 @@ server <- function(input, output) {
 # Create the Shiny app object ---------------------------------------
 shinyApp(ui = ui, server = server)
 ```
+
+### Conclusion
+```{r failure-box}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
+  facet_wrap(~ first_gen) +
+  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
+       subtitle = "First Generation vs. Non=first Generation",
+       x = "First Generation",
+       y = "Grade")
+```
+
+
+```{r failures-bar}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
+  labs(title = "Proportion of Failures in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Number of Failures")
+```
+
+
+```{r mjob}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
+  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Job") 
+```
+
+```{r fjob}
+ggplot(data = students) +
+  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
+  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
+       x = "First Generation",
+       y = "proportions",
+       fill = "Job")
+```
+
+```{r failure-sex}
+ggplot(data = students) +
+  geom_boxplot(mapping = aes(x = sex, y = avg_score)) +
+  facet_wrap(~ first_gen) +
+  labs(title = "Relationship Between Average Scores and Sex",
+       subtitle = "First Generation vs. Non=first Generation",
+       x = "First Generation",
+       y = "Grade")
+```
+
+
+
+
+
+
+
+
+

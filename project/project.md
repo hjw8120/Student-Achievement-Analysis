@@ -8,17 +8,7 @@ date: “Mar. 29th” output: github\_document —
 
 ### Load packages
 
-``` r
-library(tidyverse) 
-library(broom)
-library(infer)
-```
-
 ### Load data
-
-``` r
-students <- read_csv("/cloud/project/data/student-mat.csv")
-```
 
 Your project goes here\! Before you submit, make sure your chunks are
 turned off with `echo = FALSE`.
@@ -28,44 +18,6 @@ Introduction at the beginning and a section called Conclusion at the
 end. The rest is up to you\!
 
 Data analysis
-
-``` r
-students <- students %>%
-  mutate(first_gen = case_when(
-    Medu < 4 & Fedu <4 ~ "Yes",
-    TRUE ~ "No"
-  ))
-```
-
-``` r
-students <- students %>%
-  mutate(avg_score = ((G1 + G2 + G3)/3))
-```
-
-``` r
-first <- students %>%
-  filter(first_gen == "Yes")
-```
-
-``` r
-second <- students %>%
-  filter(first_gen == "No")
-```
-
-``` r
-first_model <- lm(avg_score ~ school + 
-                  sex + age + address + 
-                  famsize + Pstatus + 
-                   Mjob + Fjob + 
-                  reason + guardian + traveltime +
-                  studytime + failures + 
-                  paid + activities +
-                  nursery + higher + internet +
-                  romantic + famrel + freetime +
-                  goout + Dalc + Walc +
-                  health + absences, data = first)
-first_model <- step(first_model, direction = "backward")
-```
 
     ## Start:  AIC=577.21
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
@@ -531,11 +483,6 @@ first_model <- step(first_model, direction = "backward")
     ## - sex         1   167.126 2333.7 561.34
     ## - failures    1   278.619 2445.2 572.45
 
-``` r
-tidy(first_model) %>% 
-  arrange(p.value)
-```
-
     ## # A tibble: 10 x 5
     ##    term          estimate std.error statistic       p.value
     ##    <chr>            <dbl>     <dbl>     <dbl>         <dbl>
@@ -549,21 +496,6 @@ tidy(first_model) %>%
     ##  8 higheryes       1.26      0.798       1.58 0.115        
     ##  9 absences        0.0349    0.0235      1.48 0.139        
     ## 10 Dalc            0.353     0.248       1.43 0.155
-
-``` r
-second_model <- lm(avg_score ~ school + 
-                  sex + age + address + 
-                  famsize + Pstatus + 
-                   Mjob + Fjob + 
-                  reason + guardian + traveltime +
-                  studytime + failures + 
-                  paid + activities +
-                  nursery + higher + internet +
-                  romantic + famrel + freetime +
-                  goout + Dalc + Walc +
-                  health + absences, data = second)
-second_model <- step(second_model, direction = "backward")
-```
 
     ## Start:  AIC=411.05
     ## avg_score ~ school + sex + age + address + famsize + Pstatus + 
@@ -1011,11 +943,6 @@ second_model <- step(second_model, direction = "backward")
     ## - Mjob        4   134.321 1596.7 390.15
     ## - failures    1   145.745 1608.1 397.27
 
-``` r
-tidy(second_model) %>% 
-  arrange(p.value)
-```
-
     ## # A tibble: 17 x 5
     ##    term         estimate std.error statistic  p.value
     ##    <chr>           <dbl>     <dbl>     <dbl>    <dbl>
@@ -1037,97 +964,27 @@ tidy(second_model) %>%
     ## 16 Mjobteacher     1.32      1.20      1.10  0.273   
     ## 17 (Intercept)    -0.996     3.95     -0.252 0.801
 
-``` r
-glance(first_model) $ adj.r.squared
-```
-
     ## [1] 0.2374454
-
-``` r
-glance(second_model) $ adj.r.squared
-```
 
     ## [1] 0.2401251
 
-``` r
-ggplot(data = students %>%
-         group_by(studytime)) +
-  geom_boxplot(mapping = aes(x = as.character(studytime), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
-
 ![](project_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
-
-``` r
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(goout), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
 
 ![](project_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 non-first generation: failures, mother’s job, father’s job, higher first
 generation: failures, sex, studytime, goout
 
-``` r
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
-  labs(title = "Proportion of Failures in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Number of Failures")
-```
-
 ![](project_files/figure-gfm/failures-1.png)<!-- -->
 
-``` r
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
-  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job") 
-```
-
 ![](project_files/figure-gfm/mjob-1.png)<!-- -->
-
-``` r
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
-  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job")
-```
 
 ![](project_files/figure-gfm/fjob%60%60z%60%60xs-1.png)<!-- -->
 
 Factors we will be analyzing: Failures, parents’ job, goout, studytime
 
-``` r
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Mjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
 ![](project_files/figure-gfm/M-job-1.png)<!-- -->
 
-``` r
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Fjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
 ![](project_files/figure-gfm/F-job-1.png)<!-- -->
-
-``` r
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
-  facet_wrap(~ first_gen) +
-  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
-       subtitle = "First Generation vs. Non=first Generation",
-       x = "First Generation",
-       y = "Grade")
-```
 
 ![](project_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->

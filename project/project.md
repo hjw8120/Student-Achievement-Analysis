@@ -988,3 +988,20 @@ Factors we will be analyzing: Failures, parents’ job, goout, studytime
 ![](project_files/figure-gfm/F-job-1.png)<!-- -->
 
 ![](project_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+Here is a shiny app that shows the effects of the influencing variables
+we chose for both first and non-first generation students using
+interactive bar and box plots. The influencing variables for First
+Generation are: failures, sex, studytime, and goout. The influencing
+variables for Non-First Generation are: failures, Mjob, Fjob, and
+higher.
+
+<!--html_preserve-->
+
+<div class="muted well" style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;">
+
+Shiny applications not supported in static R Markdown documents
+
+</div>
+
+<!--/html_preserve-->

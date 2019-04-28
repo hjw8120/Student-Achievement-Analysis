@@ -148,3 +148,9 @@ null_students %>%
  
 ```{r glimpse}
 glimpse(students)
+```
+
+```{r rdata}
+save(students, file = "/cloud/project/data/student-new.rdata")
+```
+

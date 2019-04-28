@@ -1,178 +1,12 @@
----
-title: "MATH IS FUN IF YOU ANALYZE IT RIGHT!"
-author: "LAW Students"
-date: "April 28, 2019"
-output: html_document
-runtime: shiny
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
-
-### Load packages
-
-```{r load-packages, message=FALSE}
-library(tidyverse) 
-library(broom)
-library(infer)
+# Load packages -----------------------------------------------------
+library(tidyverse)
 library(ggplot2)
 library(shiny)
-```
 
-### Load data
-```{r load-data, message=FALSE}
-students <- read_csv("/cloud/project/data/student-mat.csv")
+# Load data ---------------------------------------------------------
 load("/cloud/project/data/student-new.rdata")
-```
-
-### Introduction
 
 
-### Data analysis
-
-Since we want to study the effect of certain variables on student achievement, the response variable is the student’s overall average grade. For the response variable, we created a new numeric variable called `avg_score` that takes the average of G1, G2, and G3, which corresponds to the term1, term2, and final grades of the students.
-```{r avg-score}
-students <- students %>%
-  mutate(avg_score = ((G1 + G2 + G3)/3))
-```
-
-We are comparing achievement levels between first generation and non-first generation Portuguese students. We classify non-first generation students as those who have one or more parent with higher education. To do this, we created a `first_gen` variable that labels first generation students (those with both mothers and fathers who have never attended higher education) as “Yes” and non-first generation students (those with at least one parent who received higher education ) as “No". 
-```{r first-gen}
-students <- students %>%
-  mutate(first_gen = case_when(
-    Medu < 4 & Fedu <4 ~ "Yes",
-    TRUE ~ "No"
-  ))
-```
-
-We created two datasets: `first` and `second` for each specific generation. There are 238 observations for first generation students and 157 observations for non-first generation students.
-```{r first-dataset}
-first <- students %>%
-  filter(first_gen == "Yes")
-```
-
-```{r second-dataset}
-second <- students %>%
-  filter(first_gen == "No")
-```
-
-We conducted backward model selection on the `first` dataset's full model to determine the variables that are most influential on average student score in first generation students.
-```{r first-selection}
-first_model <- lm(avg_score ~ school + 
-                  sex + age + address + 
-                  famsize + Pstatus + 
-                   Mjob + Fjob + 
-                  reason + guardian + traveltime +
-                  studytime + failures + 
-                  paid + activities +
-                  nursery + higher + internet +
-                  romantic + famrel + freetime +
-                  goout + Dalc + Walc +
-                  health + absences, data = first)
-first_model <- step(first_model, direction = "backward")
-tidy(first_model) %>% 
-  arrange(p.value) 
-```
-
-We conducted backward model selection on the `second` dataset's full model to determine the variables that are most influential on average student score in non-first generation students.
-```{r non-first}
-second_model <- lm(avg_score ~ school + 
-                  sex + age + address + 
-                  famsize + Pstatus + 
-                   Mjob + Fjob + 
-                  reason + guardian + traveltime +
-                  studytime + failures + 
-                  paid + activities +
-                  nursery + higher + internet +
-                  romantic + famrel + freetime +
-                  goout + Dalc + Walc +
-                  health + absences, data = second)
-second_model <- step(second_model, direction = "backward")
-tidy(second_model) %>% 
-  arrange(p.value)
-```
-
-```{r}
-glance(first_model) $ adj.r.squared
-glance(second_model) $ adj.r.squared
-```
-
-
-```{r}
-ggplot(data = students %>%
-         group_by(studytime)) +
-  geom_boxplot(mapping = aes(x = as.character(studytime), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
-
-
-```{r}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(goout), y = avg_score)) +
-  facet_wrap(~first_gen)
-```
-
-
-non-first generation: failures, mother's job, father's job, higher 
-first generation: failures, sex, studytime, goout 
-
-```{r failures}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
-  labs(title = "Proportion of Failures in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Number of Failures")
-```
-
-
-```{r mjob}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
-  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job") 
-```
-
-```{r fjob``z``xs}
-ggplot(data = students) +
-  geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
-  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
-       x = "First Generation",
-       y = "proportions",
-       fill = "Job")
-```
-
-Factors we will be analyzing: Failures, parents' job, goout, studytime 
-
-```{r M-job}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Mjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
-```{r F-job}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = Fjob, y = avg_score)) +
-  facet_wrap(~ first_gen)
-```
-
-```{r}
-ggplot(data = students) +
-  geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
-  facet_wrap(~ first_gen) +
-  labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
-       subtitle = "First Generation vs. Non=first Generation",
-       x = "First Generation",
-       y = "Grade")
-```
-
-
-Here is a shiny app that shows the effects of the influencing variables we chose for both first and non-first generation students using interactive bar and box plots. The influencing variables for First Generation are: failures, sex, studytime, and goout. The influencing variables for Non-First Generation are: failures, Mjob, Fjob, and higher.
-
-```{r shiny-app, echo = F}
 # Define UI ---------------------------------------------------------
 ui <- fluidPage(
   
@@ -243,10 +77,31 @@ server <- function(input, output) {
         labs(title = "Proportion of Study Time",
              x = "First Generation", y = "Proportion", fill = "Study Time")
     }
-    else{
-      ggplot(data = students, mapping = aes_string(x = input$x, fill = as.character(input$y))) + 
-        geom_bar(position = "fill") + labs(y = input$y)
+    else if(input$y == "Mjob"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)), position = "fill") +
+        labs(title = "Proportion of Mother's Job",
+             x = "First Generation", y = "Proportion", fill = "Mother's Job")
     }
+    else if(input$y == "Fjob"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)), position = "fill") +
+        labs(title = "Proportion of Father's Job",
+             x = "First Generation", y = "Proportion", fill = "Father's Job")
+    }
+    else if(input$y == "higher"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(higher)), position = "fill") +
+        labs(title = "Proportion of Wanting Higher Education",
+             x = "First Generation", y = "Proportion", fill = "Higher Education")
+    }
+    else if(input$y == "sex"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(sex)), position = "fill") +
+        labs(title = "Proportion of Genders",
+             x = "First Generation", y = "Proportion", fill = "Gender")
+    }
+    
   })
   
   # Text
@@ -331,4 +186,3 @@ server <- function(input, output) {
 
 # Create the Shiny app object ---------------------------------------
 shinyApp(ui = ui, server = server)
-```

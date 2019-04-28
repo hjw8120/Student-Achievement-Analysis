@@ -27,7 +27,15 @@ load("/cloud/project/data/student-new.rdata")
 ```
 
 ### Introduction
+For this project, we want to examine which characteristics are the best predictors of student achievement and how influencing factors vary between first and non-first generation students. Specifically, we are studying the effects of demographics, social, school, and family related features on Portuguese secondary students’ final Mathematics grades.
 
+The data shows student achievement in secondary education of two Portuguese schools, and was collected in November 2014 using school reports and questionnaires. The dataset comes from the UCI Machine Learning Repository, with a total of 395 observations and 33 variables. We chose the Mathematics data set, which measures student achievement in the Mathematics subject.
+
+The variables attributed to student achievement include:
+
+school, sex, age, address, famsize, Pstatus, Medu, Fedu, Mjob (mother’s job), Fjob (father’s job), reason (reason to choose this school), guardian, traveltime(home to school travel time), studytime, failures (number of past class failures), schoolsup (education), famsup (family education support), paid (extra paid classes), activities (extra-curricular activities), nursery (attended nursery school), higher (wants to receive higher education), internet (internet access at home), romantic (having romantic relationship), famrel (quality of family relationship), freetime (freetime after school), goout (going out with friends), Dalc (workday alcohol consumption), Walc (weekend alcohol consumption), health, absences, G1 (first period grade), G2 (second period grade), G3 (final grade)
+
+From this data, we came up with the question: Is there a statistically significant math score difference between first and non-first generation students? If so, we want to find out what are the variables that affect math scores in each group, in order to determine which factors we need to address to reduce the difference in math scores between first and non-first generation students. 
 
 ### Data Modification
 
@@ -61,15 +69,29 @@ second <- students %>%
 
 ### Hypothesis Test
 
-We are interested in knowing what factors predict first and non-first generation student academic success, and whether these factors differ from each other in the two groups of students. Before analyzing predictors for each group, we decided to determine whether there exists a significant difference in the level of academic achievement, and if so, the extent of difference, in first and non-first generation students. Here, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math grade of the two groups of students is significant.
+We are interested in knowing what factors predict first and non-first generation student academic success, and whether these factors differ from each other in the two groups of students. Before analyzing predictors for each group, we decided to determine whether there exists a significant difference in the level of academic achievement, and if so, the extent of difference, in first and non-first generation students. 
+
+We created a boxplot as a preliminary visualization to first see if there is a visible difference in average scores between first and non-first generation students.
+
+```{r initial-boxplot}
+ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
+      geom_boxplot() + 
+      labs(title = "Average Scores", subtitle = "First and Non-First Generation Students", x = "First Generation", y = "Average Score")
+```
+
+Here, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math score of the two groups of students is statistically significant. The null hypothesis states that there is no difference between median average scores of first and non-first generation students. The alternative hypothesis states that there is a statistically significant difference between median average scores of first and non-first generation students.
+
+The observed sample difference between median average scores of first and non-first generation students is -2.
 ```{r obs-diff}
 avg_difference <- students %>%
                 group_by(first_gen) %>%
   summarize(median = median (avg_score)) %>%
                 summarize(diff(median)) %>%
   pull()
+avg_difference
 ```
 
+We used an indpendence null hypothesis because we are comparing two variables, and used permute to generate a null distribution of the difference in median average scores between first and non-first generation students.
 ```{r permute}
 set.seed(2019)
 null_students <- students %>%
@@ -90,14 +112,16 @@ ggplot(data= null_students) +
   geom_vline(xintercept = -avg_difference, color = "red")
 ```
  
-
+We filtered for observations in the null distribution that yielded a median average score difference at least as extreme as the observed sample difference of -2.
 ```{r p-value}
 null_students %>%
   filter(stat >= -avg_difference) %>%
   summarise(p_value = 2 * (n() / 1000))
 ```
 
-Through hypothesis testing, we obtained a p-value of 0, which indicates that assume two groups have no different in their math performance, there is a 0% probability of seeing the observed difference. This shows that there exists a significant difference between the mathematics performance in first and non-first generation students. Then, we constructed a 95% confidence interval to see how different first and non-first generation students perform. The result shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 2.54 to 1.06 points lower than their non-first generation counterparts. This difference is very significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
+The p-value of 0 is less than significance level of alpha = 0.05, so we reject the null hypothesis. This indicates that assuming the two groups have no difference in their math performance, there is a 0% probability of seeing the observed difference. Thus, there exists a significant difference between the average math scores of first and non-first generation students. 
+
+Since there is a significant difference, we use a 95% confidence interval to estimate the difference in average scores of first and non-first generation students.
 
 ```{r boot-avg}
 set.seed(2019)
@@ -120,12 +144,14 @@ students %>%
             sd = sd(avg_score))
 ```
 
+The confidence interval shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 1.06 to 2.54 points lower than their non-first generation counterparts. This difference is very significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
+
 ### Model Selection
 
 Next, we move on to finding predictive factors of mathemathics performance for both groups of students separately. 
 
 We conducted backward model selection on the `first` dataset's full model to determine the variables that are most influential on average student score in first generation students.
-```{r first-selection}
+```{r first-selection, results = "hide"}
 first_model <- lm(avg_score ~ school + 
                   sex + age + address + 
                   famsize + Pstatus + 
@@ -139,6 +165,9 @@ first_model <- lm(avg_score ~ school +
                   health + absences +
                   studytime * failures, data = first)
 first_model <- step(first_model, direction = "backward")
+```
+
+```{r first-model}
 tidy(first_model) %>% 
   arrange(p.value) %>%
   select(term, estimate, p.value)
@@ -146,10 +175,27 @@ tidy(first_model) %>%
 
 avg_score-hat = 10.6 + 1.85 * sexM - 2.40 * failures + 0.702 * studytime - 0.468 * goout + 0.954 * addressU - 0.764 * romanticyes + 0.620 * studytime:failures - 1.22 * PstatusT + 0.401 * Dalc - 0.218 * health
 
-The variables with the lowest p-values, meaning they are most influential on average score in first generation students are: sex, failures, studytime, and goout.
+The variables with the lowest p-values, meaning they are most influential on average score in first generation students are: failures, sex, studytime, and goout.
+
+The following analyses for only first generation students assume all other variables are held constant: For an additional failure, average score is predicted, on average, to decrease by 2.40 points. Males' average scores are expected, on average, to be 1.85 points higher than females' scores. For a one hour increase in study time, the average score is predicted, on average, to increase by 0.702 points. For an additional day of going out, the average score is predicted, on average, to decrease by 0.468 points. 
+
+Since studytime and failures are both influential variables, we modeled an interaction between these two variables.
+```{r interaction}
+m_int <- lm(avg_score ~ studytime * failures, data = first)
+m_int
+```
+
+avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * failures + 0.392 * studytime * failures
+
+0 Failures: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 0 + 0.392 * studytime * 0 = 10.03 + 0.332 * studytime
+1 Failure: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 1 + 0.392 * studytime * 1 = 7.91 + 0.714 * studytime 
+2 Failures: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 2 + 0.392 * studytime * 2 = 5.79 + 1.11 * studytime
+3 Failures: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 3 + 0.392 * studytime * 3 = 3.67 + 1.50 * studytime
+
+The rate of change in average score as studytime increases does vary between the number of failures each student has had in the past (different slopes). Some average scores based on failures is higher in some number of failures and lower in others (different intercepts).
 
 We conducted backward model selection on the `second` dataset's full model to determine the variables that are most influential on average student score in non-first generation students.
-```{r non-first}
+```{r non-first, results = "hide"}
 second_model <- lm(avg_score ~ school + 
                   sex + age + address + 
                   famsize + Pstatus + 
@@ -163,6 +209,9 @@ second_model <- lm(avg_score ~ school +
                   health + absences +
                   studytime * failures, data = second)
 second_model <- step(second_model, direction = "backward")
+```
+
+```{r second-model}
 tidy(second_model) %>% 
   arrange(p.value) %>%
   select(term, estimate, p.value)
@@ -172,11 +221,15 @@ avg_score-hat = -0.996 - 2.48 * failures + 3.45 * Mjobhealth + 3.76 * Fjobteache
 
 The variables with the lowest p-values, meaning they are most influential on average score in non-first generation students are: failures, Mjob, Fjob, and higher.
 
-Below is our adjusted r squared value for both models. We are 24.5% confident that the first model predicts the mathematics performance of first generation students. We are 24% confident that the second model predicts the mathematics performance of non-first generation students
-```{r}
+The following analyses for only non-first generation students assume all other variables are held constant: For an additional failure, average score is predicted, on average, to decrease by 2.48 points. Compared to students whose mothers work at home, on average, students with mothers in health score 3.45 points higher, students with mothers in job services score 3.01 points higher, students with mothers in teaching score 1.32 points higher, and students with mothers in other jobs score 2.12 points higher. Compared to students whose fathers work at home, on average, students with fathers in health score 1.87 points higher, students with fathers in job services score 2.63 points higher, students with fathers in teaching score 3.76 points higher, and students with fathers in other jobs score 2.01 points higher. Students who want higher education's average scores are predicted, on average, to be 8.60 points higher than those who do not want higher education.
+
+The R-squared value measures the strength of the fit of a linear model. We used the adjusted R-squared value because it accounts for the additional variables in a multiple regression model. Roughly 24.5% of the variability in first generation students' average scores can be explained by gender, failures, study time, number of times going out, urban or rural address, romantic relationships, parent status, alcohol consumption, and health. Roughtly 24.0% of the variability in non-first generation students' average scores can be explained by failures, mother's job, father's job, wanting higher education, supplemental education, alcohol consumption, internet access, travel time, free time, and number of times going out.
+```{r r-squared}
 glance(first_model) $ adj.r.squared
 glance(second_model) $ adj.r.squared
 ```
+
+### Shiny App
 
 Here is a shiny app that shows the effects of the influencing variables we chose for both first and non-first generation students using interactive bar and box plots. The influencing variables for First Generation are: failures, sex, studytime, and goout. The influencing variables for Non-First Generation are: failures, Mjob, Fjob, and higher.
 
@@ -362,58 +415,94 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-### Conclusion
+### Graph Analysis
+
+We chose to visually analyze three variables: past class failures, which is the most influential variable for both groups, mothers and fathers’ jobs, which are the second and third most influential variables for non-first generation students, and gender, which is the second most influential variable for first-generation students. We believe that these variables will provide us some insight on the factors underlying first and non-first generation students’ academic success.
+
+The following is a boxplot that visualizes the relationship between past class failures and average score for first and non-first generation students: 
+
 ```{r failure-box}
 ggplot(data = students) +
   geom_boxplot(mapping = aes(x = as.character(failures), y = avg_score)) +
   facet_wrap(~ first_gen) +
   labs(title = "Relationship Between Average Scores and Numbers of Past Failures",
-       subtitle = "First Generation vs. Non=first Generation",
-       x = "First Generation",
-       y = "Grade")
+       subtitle = "First Generation vs. Non-first Generation Students",
+       x = "Number of Failures",
+       y = "Average Score")
 ```
 
+The comparative box plot demonstrates that non-first generation students obtain slightly higher average scores when they both have zero past class failures, but first generation students obtain higher scores if they have one or more past failure. We found this interesting because we would have assumed that non-first generation students would have higher scores, regardless of past-class failures. However, the bar graph below visualizes the proportion of failures in first and non-first generation students, and it demonstrates that non-first generation students have a much higher proportion of students who do not have past class failures than first generation students. Therefore, the fact that first generation students obtain higher score when they have more than one failure might just be due to the fact that the small number of non-first generation who fail one or more classes get slightly lower scores than the first generation students who, on average, fail more often. 
 
 ```{r failures-bar}
 ggplot(data = students) +
   geom_bar(mapping = aes(x = first_gen, fill = as.character(failures)), position = "fill") +
-  labs(title = "Proportion of Failures in First and Non-first Generation Students",
+  labs(title = "Proportion of Failures", 
+       subtitle = "First Generation vs. Non-first Generation Students",
        x = "First Generation",
-       y = "proportions",
+       y = "Proportions",
        fill = "Number of Failures")
 ```
 
+The following are stacked bar graphs that visualize the proportion of mother’s and father’s jobs in first and non-first generation students. The “Mother’s Job” graph shows that the most common job for mothers of non-first generation students is “Teacher”, followed by “Services,” “Other,” “Health” and lastly “At Home.” The most common job for first-generation students is “Other,” followed by “Services,” “At Home,” “Health” and finally “Teacher.” The “Father’s Job” graph shows that the most common job for fathers of non-first generation students is “Other,” followed by “Services,” “Teacher,” “Health,” and “At Home.” The most common job for fathers of first generation students is “Other,” followed by “Services,” “Teacher,” “Health,” and “At Home.”
+
+Within the context of our investigation, these results could serve to explore the difference in average math scores between first and non-first generation students. Some possible hypotheses for the impact of parents’ job on math scores are: 
+
+1. Since a higher proportion of their parents work as teachers, non-first generation students have extra academic support at home, which in turn improves their math scores. First generation students do not have the same readily-available extra help. 
+2. Since many of their mothers work as “Other,” first generation students’ mothers might have low-paying jobs that do not allow them to be at home when their children come home from school. Thus, first generation students might have more responsibilities within their homes, such as taking care of younger siblings, cooking, cleaning, etc., which do not allow enough time to prepare or get extra help in their math homework. 
+3. Since many of their mothers work in the healthcare industry, non-first generation students’ mothers might earn a higher income, which allows their children to get extra tutoring outside of school and improve their math scores. 
+
+We do not assume that any of these hypotheses are true – one, many or none might be true. However, they prove that these graphs produce questions that are worth exploring in further research. 
 
 ```{r mjob}
 ggplot(data = students) +
   geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)),  position = "fill") +
-  labs(title = "Proportion of Mother's Job in First and Non-first Generation Students",
+  labs(title = "Proportion of Mother's Job",
+       subtitle = "First Generation vs. Non-first Generation Students",
        x = "First Generation",
-       y = "proportions",
+       y = "Proportions",
        fill = "Job") 
 ```
 
 ```{r fjob}
 ggplot(data = students) +
   geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)),  position = "fill") +
-  labs(title = "Proportion of Father's Job in First and Non-first Generation Students",
+  labs(title = "Proportion of Father's Job",
+       subtitle = "First Generation vs. Non-first Generation Students",
        x = "First Generation",
-       y = "proportions",
+       y = "Proportions",
        fill = "Job")
 ```
+
+Finally, the following are comparative box plots that show the relationship between average scores and gender in first and non-first generation students. The spreads are similar for males and females in both first and non-first generation box plots. However, the plot shows that first generation students have a greater difference in median scores between males and females. Some possible hypotheses for the impact of gender on first generation students’ scores are: 
+1. First generation female students might be less empowered to pursue higher education, so they are less encouraged to pursue careers in STEM. 
+2. Females among first generation student might experience stereotype threats (girls are not good at STEM) due to lack of support by parents, teachers, other students, etc.
+Once again, these hypotheses only serve to guide further research.
 
 ```{r failure-sex}
 ggplot(data = students) +
   geom_boxplot(mapping = aes(x = sex, y = avg_score)) +
   facet_wrap(~ first_gen) +
-  labs(title = "Relationship Between Average Scores and Sex",
-       subtitle = "First Generation vs. Non=first Generation",
-       x = "First Generation",
-       y = "Grade")
+  labs(title = "Relationship Between Average Scores and Gender",
+       subtitle = "First Generation vs. Non-first Generation Students",
+       x = "Gender",
+       y = "Average Score")
 ```
 
+### Conclusion
 
+We found a significant difference (p < 0.0001) in the mathematical performance of first and non-first generation students. This rejects the null hypothesis and supports our hypothesis that there exists a difference in the mathematical performance of first and second generation students. Our confidence interval (-2.54, -1.06) suggests that the difference between their grades is huge, considering that the median grade for all students is around 10.7. This means that first generation students on average perform about 10% to even 20% lower than their non-first generation counterparts. 
 
+Our backward selection model shows that the predicting variables for average scores are different in first and non-first generation students. For first generation students, the number of past failures, sex, study time, and the number of times the individual goes out in a week have the strongest associations with the student’s average math score. For non-first generation students, the number of past failures, mother’s job, father’s job and student’s intention of attending higher education are most predictive of their average score. 
+
+### Discussion
+
+Without the support of parents with higher educational degrees, first generation students are likely to receive less financial support, encounter more obstacles, and achieve lower academic success in comparison to non-first generation students. It is important for educators to understand the specific underlying factors that might hinder first generation students from achieving the same level of success. By analyzing data obtained from Portuguese secondary school students, our project provides some insight into these factors. Our results provide some preliminary analysis for future related research, and researchers can collect data regarding the factors our project determined to conduct further investigations. In addition, our results suggest ways for educators to come up with possible interventions to target the obstacles that hinder first generation academic success. For example, our analysis shows that female students performed worse than their male counterparts among first generation students. This could be due to the prevalence of stereotype threat that target female students among first generation students. It may be beneficial for educators to do further research and develop intervention programs to help first generation female students overcome the barrier. 
+
+Our project has some limitations and weaknesses. First, we didn’t provide a thorough analysis for all variables that contributed to our models. As result, some important variables may be overlooked. Second, while we highlighted and visualized the top predicting variables for both groups, we weren’t able to statistically analyze their differences between the two groups due to their complexity. This makes our comparisons less statistically reliable. Third, we are unsure to what extent our results can be generalized to the general population, considering that the sample we chose do not have a large size or diversity. Finally, both our models yielded an adjusted r squared value around 25%. While the r-squared value is significant, there are still 75% variability not accounted by the model. We failed to analyze other variables that may contribute to students’ academic success. To improve our models, we could have done more interactive variable modeling, such as multiple order interactions or other types of regression analysis besides linear. This might have given us better models that account for higher variabilities.
+
+The reliability of our results also depend on the reliability of our data. While we trusted the data enough to analyze and draw conclusions from it, there are certainly issues that make us doubt its validity. For example, as previously mentioned, we do not know if a sample size of 395 Portuguese students allow us to generalize these results to describe secondary school students in Portugal. If not the entire high school student population of Portugal, we are unsure about which population we are drawing conclusions about through this investigation. Furthermore, in terms of data collection, we feel like the data provides inaccurate measures of certain variables. For instance, study time is measured as an average number of hours studied per day, which is a highly subjective measurement that might fluctuate daily and weekly. Also, variables such as extracurricular activities were accounted for with a “Yes/No” response, which does not take into account what kind of activities the students are involved in (sports, music, academic, etc.) and how that might affect their academic scores. 
+
+If we were to do our project again, there are some changes we would like to make. First, we would enlarge our sample size by either looking for datasets with larger sample sizes or combine different datasets that have similar variables and backgrounds. In addition, we might explore other comparison groups, such as gender, location, and family status. We can also look more into how the factors we discovered impact students in more details in the future. It would also be interesting for us to compare different variables with each other and to analyze whether there exist interactions between them. 
 
 
 

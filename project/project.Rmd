@@ -29,7 +29,7 @@ load("/cloud/project/data/student-new.rdata")
 ### Introduction
 
 
-### Data analysis
+### Data Modification
 
 Since we want to study the effect of certain variables on student achievement, the response variable is the student’s overall average grade. For the response variable, we created a new numeric variable called `avg_score` that takes the average of G1, G2, and G3, which corresponds to the term1, term2, and final grades of the students.
 ```{r avg-score}
@@ -57,7 +57,9 @@ second <- students %>%
   filter(first_gen == "No")
 ```
 
-Data analysis
+### Data Analysis
+
+### Hypothesis Test
 
 We are interested in knowing what factors predict first and non-first generation student academic success, and whether these factors differ from each other in the two groups of students. Before analyzing predictors for each group, we decided to determine whether there exists a significant difference in the level of academic achievement, and if so, the extent of difference, in first and non-first generation students. Here, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math grade of the two groups of students is significant.
 ```{r obs-diff}
@@ -94,7 +96,9 @@ null_students %>%
   filter(stat >= -avg_difference) %>%
   summarise(p_value = 2 * (n() / 1000))
 ```
+
 Through hypothesis testing, we obtained a p-value of 0, which indicates that assume two groups have no different in their math performance, there is a 0% probability of seeing the observed difference. This shows that there exists a significant difference between the mathematics performance in first and non-first generation students. Then, we constructed a 95% confidence interval to see how different first and non-first generation students perform. The result shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 2.54 to 1.06 points lower than their non-first generation counterparts. This difference is very significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
+
 ```{r boot-avg}
 set.seed(2019)
 boot_avg <- students %>%
@@ -116,53 +120,57 @@ students %>%
             sd = sd(avg_score))
 ```
 
+### Model Selection
+
 Next, we move on to finding predictive factors of mathemathics performance for both groups of students separately. 
-
-
-
-
-
-
-
-
-
-
 
 We conducted backward model selection on the `first` dataset's full model to determine the variables that are most influential on average student score in first generation students.
 ```{r first-selection}
 first_model <- lm(avg_score ~ school + 
                   sex + age + address + 
                   famsize + Pstatus + 
-                   Mjob + Fjob + 
+                  Mjob + Fjob + 
                   reason + guardian + traveltime +
                   studytime + failures + 
                   paid + activities +
                   nursery + higher + internet +
                   romantic + famrel + freetime +
                   goout + Dalc + Walc +
-                  health + absences, data = first)
+                  health + absences +
+                  studytime * failures, data = first)
 first_model <- step(first_model, direction = "backward")
 tidy(first_model) %>% 
-  arrange(p.value) 
+  arrange(p.value) %>%
+  select(term, estimate, p.value)
 ```
+
+avg_score-hat = 10.6 + 1.85 * sexM - 2.40 * failures + 0.702 * studytime - 0.468 * goout + 0.954 * addressU - 0.764 * romanticyes + 0.620 * studytime:failures - 1.22 * PstatusT + 0.401 * Dalc - 0.218 * health
+
+The variables with the lowest p-values, meaning they are most influential on average score in first generation students are: sex, failures, studytime, and goout.
 
 We conducted backward model selection on the `second` dataset's full model to determine the variables that are most influential on average student score in non-first generation students.
 ```{r non-first}
 second_model <- lm(avg_score ~ school + 
                   sex + age + address + 
                   famsize + Pstatus + 
-                   Mjob + Fjob + 
+                  Mjob + Fjob + 
                   reason + guardian + traveltime +
                   studytime + failures + 
                   paid + activities +
                   nursery + higher + internet +
                   romantic + famrel + freetime +
                   goout + Dalc + Walc +
-                  health + absences, data = second)
+                  health + absences +
+                  studytime * failures, data = second)
 second_model <- step(second_model, direction = "backward")
 tidy(second_model) %>% 
-  arrange(p.value)
+  arrange(p.value) %>%
+  select(term, estimate, p.value)
 ```
+
+avg_score-hat = -0.996 - 2.48 * failures + 3.45 * Mjobhealth + 3.76 * Fjobteacher + 8.60 * higheryes + 2.56 * schoolMS + 3.01 * Mjobservices - 0.643 * Dalc + 2.63 * Fjobservices + 1.75 * internetyes - 0.821 * traveltime + 2.12 * Mjobother + 0.478 * freetime - 0.413 * goout + 2.01 * Fjobother + 1.87 * Fjobhealth + 1.32 * Mjobteacher
+
+The variables with the lowest p-values, meaning they are most influential on average score in non-first generation students are: failures, Mjob, Fjob, and higher.
 
 ```{r}
 glance(first_model) $ adj.r.squared
@@ -314,10 +322,31 @@ server <- function(input, output) {
         labs(title = "Proportion of Study Time",
              x = "First Generation", y = "Proportion", fill = "Study Time")
     }
-    else{
-      ggplot(data = students, mapping = aes_string(x = input$x, fill = as.character(input$y))) + 
-        geom_bar(position = "fill") + labs(y = input$y)
+    else if(input$y == "Mjob"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(Mjob)), position = "fill") +
+        labs(title = "Proportion of Mother's Job",
+             x = "First Generation", y = "Proportion", fill = "Mother's Job")
     }
+    else if(input$y == "Fjob"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(Fjob)), position = "fill") +
+        labs(title = "Proportion of Father's Job",
+             x = "First Generation", y = "Proportion", fill = "Father's Job")
+    }
+    else if(input$y == "higher"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(higher)), position = "fill") +
+        labs(title = "Proportion of Wanting Higher Education",
+             x = "First Generation", y = "Proportion", fill = "Higher Education")
+    }
+    else if(input$y == "sex"){
+      ggplot(data = students) +
+        geom_bar(mapping = aes(x = first_gen, fill = as.character(sex)), position = "fill") +
+        labs(title = "Proportion of Genders",
+             x = "First Generation", y = "Proportion", fill = "Gender")
+    }
+    
   })
   
   # Text

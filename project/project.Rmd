@@ -57,6 +57,77 @@ second <- students %>%
   filter(first_gen == "No")
 ```
 
+Data analysis
+
+We are interested in knowing what factors predict first and non-first generation student academic success, and whether these factors differ from each other in the two groups of students. Before analyzing predictors for each group, we decided to determine whether there exists a significant difference in the level of academic achievement, and if so, the extent of difference, in first and non-first generation students. Here, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math grade of the two groups of students is significant.
+```{r obs-diff}
+avg_difference <- students %>%
+                group_by(first_gen) %>%
+  summarize(median = median (avg_score)) %>%
+                summarize(diff(median)) %>%
+  pull()
+```
+
+```{r permute}
+set.seed(2019)
+null_students <- students %>%
+  specify(response = avg_score, explanatory = first_gen) %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in medians",
+            order = c("No", "Yes"))
+```
+
+```{r plot-permute}
+ggplot(data= null_students) +
+  geom_histogram(mapping = aes(x = stat), binwidth = 0.2) +
+  labs(title = "Null distribution of Difference in Median Average Scores",
+       x = "Difference in Median Average Scores",
+       y = "Frequency") +
+  geom_vline(xintercept = avg_difference, color = "red") +
+  geom_vline(xintercept = -avg_difference, color = "red")
+```
+ 
+
+```{r p-value}
+null_students %>%
+  filter(stat >= -avg_difference) %>%
+  summarise(p_value = 2 * (n() / 1000))
+```
+Through hypothesis testing, we obtained a p-value of 0, which indicates that assume two groups have no different in their math performance, there is a 0% probability of seeing the observed difference. This shows that there exists a significant difference between the mathematics performance in first and non-first generation students. Then, we constructed a 95% confidence interval to see how different first and non-first generation students perform. The result shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 2.54 to 1.06 points lower than their non-first generation counterparts. This difference is very significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
+```{r boot-avg}
+set.seed(2019)
+boot_avg <- students %>%
+  specify(response = avg_score, explanatory = first_gen) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "diff in means", order = c("Yes", "No"))
+```
+
+``` {r confidence}
+boot_avg %>%
+  summarize(lower_bound = quantile(stat, 0.025),
+            upper_bound = quantile(stat, 0.975))
+```
+```{r summary-stats}
+students %>%
+  summarise(mean = mean(avg_score),
+            max = max(avg_score),
+            min = min(avg_score),
+            sd = sd(avg_score))
+```
+
+Next, we move on to finding predictive factors of mathemathics performance for both groups of students separately. 
+
+
+
+
+
+
+
+
+
+
+
 We conducted backward model selection on the `first` dataset's full model to determine the variables that are most influential on average student score in first generation students.
 ```{r first-selection}
 first_model <- lm(avg_score ~ school + 

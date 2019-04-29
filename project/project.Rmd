@@ -91,7 +91,7 @@ avg_difference <- students %>%
 avg_difference
 ```
 
-We used an indpendence null hypothesis because we are comparing two variables, and used permute to generate a null distribution of the difference in median average scores between first and non-first generation students.
+We used an independence null hypothesis because we are comparing two variables, and used permute to generate a null distribution of the difference in median average scores between first and non-first generation students.
 ```{r permute}
 set.seed(2019)
 null_students <- students %>%
@@ -119,7 +119,7 @@ null_students %>%
   summarise(p_value = 2 * (n() / 1000))
 ```
 
-The p-value of 0 is less than significance level of alpha = 0.05, so we reject the null hypothesis. This indicates that assuming the two groups have no difference in their math performance, there is a 0% probability of seeing the observed difference. Thus, there exists a significant difference between the average math scores of first and non-first generation students. 
+The p-value of 0 is less than significance level of alpha = 0.05, so we reject the null hypothesis. This indicates that assuming the two groups have no difference in their math performance, there is a 0% probability of seeing the observed difference (or any difference more extreme). Thus, there exists a significant difference between the average math scores of first and non-first generation students. 
 
 Since there is a significant difference, we use a 95% confidence interval to estimate the difference in average scores of first and non-first generation students.
 
@@ -144,7 +144,7 @@ students %>%
             sd = sd(avg_score))
 ```
 
-The confidence interval shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 1.06 to 2.54 points lower than their non-first generation counterparts. This difference is very significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
+The confidence interval shows that we are 95% confident that the true difference between mathematic performance in first and non-first generation students is between -2.54 and -1.06. In other words, it is highly likely that first generation students on average score 1.06 to 2.54 points lower than their non-first generation counterparts. This difference is significant, considering the average score for all the students is 10.70 with a standard deviation of 3.70. 
 
 ### Model Selection
 
@@ -179,7 +179,7 @@ The variables with the lowest p-values, meaning they are most influential on ave
 
 The following analyses for only first generation students assume all other variables are held constant: For an additional failure, average score is predicted, on average, to decrease by 2.40 points. Males' average scores are expected, on average, to be 1.85 points higher than females' scores. For a one hour increase in study time, the average score is predicted, on average, to increase by 0.702 points. For an additional day of going out, the average score is predicted, on average, to decrease by 0.468 points. 
 
-Since studytime and failures are both influential variables, we modeled an interaction between these two variables.
+Since studytime and failures are both influential variables, and we thought they might be related, we modeled an interaction between these two variables.
 ```{r interaction}
 m_int <- lm(avg_score ~ studytime * failures, data = first)
 m_int
@@ -192,7 +192,7 @@ avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * failures + 0.392 * studytime 
 2 Failures: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 2 + 0.392 * studytime * 2 = 5.79 + 1.11 * studytime
 3 Failures: avg_score-hat = 10.03 + 0.322 * studytime - 2.12 * 3 + 0.392 * studytime * 3 = 3.67 + 1.50 * studytime
 
-The rate of change in average score as studytime increases does vary between the number of failures each student has had in the past (different slopes). Some average scores based on failures is higher in some number of failures and lower in others (different intercepts).
+As the number of failures increases, the intercepts decrease, meaning that, all else held constant, students with a study time of 0 hours are predicted to have a higher grade when they have less past failures. As the number of failures increase, the slope of `studytime` increases, meaning that, all else held constant, study time has more of an impact on their grade if they have had more failures.
 
 We conducted backward model selection on the `second` dataset's full model to determine the variables that are most influential on average student score in non-first generation students.
 ```{r non-first, results = "hide"}
@@ -223,10 +223,10 @@ The variables with the lowest p-values, meaning they are most influential on ave
 
 The following analyses for only non-first generation students assume all other variables are held constant: For an additional failure, average score is predicted, on average, to decrease by 2.48 points. Compared to students whose mothers work at home, on average, students with mothers in health score 3.45 points higher, students with mothers in job services score 3.01 points higher, students with mothers in teaching score 1.32 points higher, and students with mothers in other jobs score 2.12 points higher. Compared to students whose fathers work at home, on average, students with fathers in health score 1.87 points higher, students with fathers in job services score 2.63 points higher, students with fathers in teaching score 3.76 points higher, and students with fathers in other jobs score 2.01 points higher. Students who want higher education's average scores are predicted, on average, to be 8.60 points higher than those who do not want higher education.
 
-The R-squared value measures the strength of the fit of a linear model. We used the adjusted R-squared value because it accounts for the additional variables in a multiple regression model. Roughly 24.5% of the variability in first generation students' average scores can be explained by gender, failures, study time, number of times going out, urban or rural address, romantic relationships, parent status, alcohol consumption, and health. Roughtly 24.0% of the variability in non-first generation students' average scores can be explained by failures, mother's job, father's job, wanting higher education, supplemental education, alcohol consumption, internet access, travel time, free time, and number of times going out.
+The R-squared value measures the strength of the fit of a linear model. Roughly 27.7% of the variability in first generation students' average scores can be explained by gender, failures, study time, number of times going out, urban or rural address, romantic relationships, parent status, alcohol consumption, and health. Roughtly 31.8% of the variability in non-first generation students' average scores can be explained by failures, mother's job, father's job, wanting higher education, supplemental education, alcohol consumption, internet access, travel time, free time, and number of times going out.
 ```{r r-squared}
-glance(first_model) $ adj.r.squared
-glance(second_model) $ adj.r.squared
+glance(first_model) $ r.squared
+glance(second_model) $ r.squared
 ```
 
 ### Shiny App
@@ -431,7 +431,7 @@ ggplot(data = students) +
        y = "Average Score")
 ```
 
-The comparative box plot demonstrates that non-first generation students obtain slightly higher average scores when they both have zero past class failures, but first generation students obtain higher scores if they have one or more past failure. We found this interesting because we would have assumed that non-first generation students would have higher scores, regardless of past-class failures. However, the bar graph below visualizes the proportion of failures in first and non-first generation students, and it demonstrates that non-first generation students have a much higher proportion of students who do not have past class failures than first generation students. Therefore, the fact that first generation students obtain higher score when they have more than one failure might just be due to the fact that the small number of non-first generation who fail one or more classes get slightly lower scores than the first generation students who, on average, fail more often. 
+The comparative box plot demonstrates that non-first generation students have a slightly higher median average score when they both have zero past class failures, but first generation students obtain higher median average scores if they have one or more past failures. We found this interesting because we would have assumed that non-first generation students would have higher scores, regardless of past class failures. However, the bar graph below visualizes the proportion of failures in first and non-first generation students, and it demonstrates that non-first generation students have a much higher proportion of students who do not have past class failures than first generation students. Therefore, the fact that first generation students obtain higher median average scores when they have more than one failure might just be due to the fact that the small number of non-first generation who fail one or more classes get slightly lower scores than the first generation students who, on average, fail more often. 
 
 ```{r failures-bar}
 ggplot(data = students) +
@@ -490,22 +490,17 @@ ggplot(data = students) +
 
 ### Conclusion
 
-We found a significant difference (p < 0.0001) in the mathematical performance of first and non-first generation students. This rejects the null hypothesis and supports our hypothesis that there exists a difference in the mathematical performance of first and second generation students. Our confidence interval (-2.54, -1.06) suggests that the difference between their grades is huge, considering that the median grade for all students is around 10.7. This means that first generation students on average perform about 10% to even 20% lower than their non-first generation counterparts. 
+We found a significant difference (p < 0.0001) in the mathematical performance of first and non-first generation students. This rejects the null hypothesis and supports our hypothesis that there exists a difference in the mathematical performance of first and second generation students. Our confidence interval (-2.54, -1.06) suggests that the difference between their grades is significant, considering that the median grade for all students is around 10.7. This means that first generation students on average perform about 10% to even 20% lower than their non-first generation counterparts. 
 
 Our backward selection model shows that the predicting variables for average scores are different in first and non-first generation students. For first generation students, the number of past failures, sex, study time, and the number of times the individual goes out in a week have the strongest associations with the student’s average math score. For non-first generation students, the number of past failures, mother’s job, father’s job and student’s intention of attending higher education are most predictive of their average score. 
 
 ### Discussion
 
-Without the support of parents with higher educational degrees, first generation students are likely to receive less financial support, encounter more obstacles, and achieve lower academic success in comparison to non-first generation students. It is important for educators to understand the specific underlying factors that might hinder first generation students from achieving the same level of success. By analyzing data obtained from Portuguese secondary school students, our project provides some insight into these factors. Our results provide some preliminary analysis for future related research, and researchers can collect data regarding the factors our project determined to conduct further investigations. In addition, our results suggest ways for educators to come up with possible interventions to target the obstacles that hinder first generation academic success. For example, our analysis shows that female students performed worse than their male counterparts among first generation students. This could be due to the prevalence of stereotype threat that target female students among first generation students. It may be beneficial for educators to do further research and develop intervention programs to help first generation female students overcome the barrier. 
+Without the support of parents with higher educational degrees, first generation students are likely to receive less financial support, encounter more obstacles, and achieve lower academic success in comparison to non-first generation students. It is important for educators to understand the specific underlying factors that might hinder first generation students from achieving the same level of success. By analyzing data obtained from Portuguese secondary school students, our project provides some insight into these factors. Our results provide some preliminary analysis for future related research, and researchers can collect data regarding the factors our project determined to conduct further investigations. In addition, our results suggest ways for educators to come up with possible interventions to target the obstacles that hinder first generation academic success. For example, our analysis shows that female students performed worse than their male counterparts among first generation students. This could be due to the prevalence of stereotype threat that target female students among first generation students. It may be beneficial for educators to do further research and develop intervention programs to help first generation female students reduce the grade gap. 
 
-Our project has some limitations and weaknesses. First, we didn’t provide a thorough analysis for all variables that contributed to our models. As result, some important variables may be overlooked. Second, while we highlighted and visualized the top predicting variables for both groups, we weren’t able to statistically analyze their differences between the two groups due to their complexity. This makes our comparisons less statistically reliable. Third, we are unsure to what extent our results can be generalized to the general population, considering that the sample we chose do not have a large size or diversity. Finally, both our models yielded an adjusted r squared value around 25%. While the r-squared value is significant, there are still 75% variability not accounted by the model. We failed to analyze other variables that may contribute to students’ academic success. To improve our models, we could have done more interactive variable modeling, such as multiple order interactions or other types of regression analysis besides linear. This might have given us better models that account for higher variabilities.
+Our project has some limitations and weaknesses. First, we didn’t provide a thorough analysis for all variables that contributed to our models. As result, some important variables may be overlooked. Second, while we highlighted and visualized the top predicting variables for both groups, we weren’t able to statistically analyze their differences between the two groups due to their complexity. This makes our comparisons less statistically reliable. Third, we are unsure to what extent our results can be generalized to the general population, considering that the sample we chose do not have a large size or diversity. Finally, both our models yielded an adjusted r squared value around 28%. While the r-squared value is significant, there are still 72% variability not accounted by the model. We failed to analyze other variables that may contribute to students’ academic success. To improve our models, we could have done more interactive variable modeling, such as multiple order interactions or other types of regression analysis besides linear. This might have given us better models that account for higher variabilities.
 
 The reliability of our results also depend on the reliability of our data. While we trusted the data enough to analyze and draw conclusions from it, there are certainly issues that make us doubt its validity. For example, as previously mentioned, we do not know if a sample size of 395 Portuguese students allow us to generalize these results to describe secondary school students in Portugal. If not the entire high school student population of Portugal, we are unsure about which population we are drawing conclusions about through this investigation. Furthermore, in terms of data collection, we feel like the data provides inaccurate measures of certain variables. For instance, study time is measured as an average number of hours studied per day, which is a highly subjective measurement that might fluctuate daily and weekly. Also, variables such as extracurricular activities were accounted for with a “Yes/No” response, which does not take into account what kind of activities the students are involved in (sports, music, academic, etc.) and how that might affect their academic scores. 
 
-If we were to do our project again, there are some changes we would like to make. First, we would enlarge our sample size by either looking for datasets with larger sample sizes or combine different datasets that have similar variables and backgrounds. In addition, we might explore other comparison groups, such as gender, location, and family status. We can also look more into how the factors we discovered impact students in more details in the future. It would also be interesting for us to compare different variables with each other and to analyze whether there exist interactions between them. 
-
-
-
-
-
+If we were to do our project again, there are some changes we would like to make. First, we would enlarge our sample size by either looking for datasets with larger sample sizes or combine different datasets that have similar variables and backgrounds. In addition, we might explore other comparison groups, such as location and family status. We can also look more into how the factors we discovered impact students in more details in the future. It would also be interesting for us to compare different variables with each other and to analyze whether there exist interactions between them. 
 

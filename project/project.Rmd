@@ -79,7 +79,7 @@ ggplot (students, mapping = aes(x = first_gen, y = avg_score)) +
       labs(title = "Average Scores", subtitle = "First and Non-First Generation Students", x = "First Generation", y = "Average Score")
 ```
 
-Here, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math score of the two groups of students is statistically significant. The null hypothesis states that there is no difference between median average scores of first and non-first generation students. The alternative hypothesis states that there is a statistically significant difference between median average scores of first and non-first generation students.
+Since there was a visible difference in their scores in the boxplot, we conducted a hypothesis test with a bootstrap sample of 1000 to see whether the observed difference in the average math score of the two groups of students is statistically significant. The null hypothesis states that there is no difference between median average scores of first and non-first generation students. The alternative hypothesis states that there is a statistically significant difference between median average scores of first and non-first generation students.
 
 The observed sample difference between median average scores of first and non-first generation students is -2.
 ```{r obs-diff}
